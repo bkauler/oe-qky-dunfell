@@ -1,0 +1,28 @@
+# Recipe created by recipetool
+# recipetool create -o gdl_3.4.2.bb https://download.gnome.org/sources/gdl/3.4/gdl-3.4.2.tar.xz
+
+LICENSE = "LGPLv2"
+LIC_FILES_CHKSUM = "file://COPYING;md5=3bf50002aefd002f49e7bb854063f7e7"
+
+SRC_URI = "https://download.gnome.org/sources/gdl/3.4/gdl-${PV}.tar.xz"
+SRC_URI[md5sum] = "501f6d2add5aa1758a51f140b9644602"
+SRC_URI[sha1sum] = "569858c1d596b8a0d7f6d0858ec182536f81a311"
+SRC_URI[sha256sum] = "66eeca8aa8e7205abf38911a9eadfbd288967f92388682bd62942ed4f1db4906"
+SRC_URI[sha384sum] = "ebbb88b76cf327748c5550dc20a5b46961d10ff0d14e7f41d6b4bc2f269ac11d52f37c94f9a54c5d20d831a74417ddf6"
+SRC_URI[sha512sum] = "cf48cdcd867548d457f485a644834edea59a725dbf08aa985a9884eeee96d16cf97e98bfe6b80ebfeabfc36c799a0ca9d7b840362efe0a523913dfbaf09c46c3"
+
+# no, compile fail:  gobject-introspection gobject-introspection-native
+DEPENDS = "gtk+3 intltool-native libxml2"
+
+inherit gettext pkgconfig autotools
+
+EXTRA_OECONF = "--enable-introspection=no"
+
+CFLAGS_append = " -Wno-error=format-security "
+#should really fix this...
+#ERROR: gdl-3.4.2-r2 do_package_qa: QA Issue: gdl: The compile log indicates that host include and/or library paths were used.
+INSANE_SKIP_${PN} += "compile-host-path"
+
+HOMEPAGE = "https://gitlab.gnome.org/GNOME/gdl"
+SUMMARY = "Gnome development docking library"
+

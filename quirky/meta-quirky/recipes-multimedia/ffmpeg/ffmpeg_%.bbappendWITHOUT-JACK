@@ -1,0 +1,60 @@
+
+#20200920 don't know if uses them, but add x264, x265
+DEPENDS = " alsa-lib zlib libogg yasm-native \
+            libcdio libcdio-paranoia openssl libva wavpack libvpx libvorbis \
+            speex schroedinger openjpeg opencore-amr orc lame libvdpau libsdl \
+            libsdl-image libsdl-mixer mesa libdrm xz bzip2 zip unzip libxcb \
+            v4l-utils libdc1394 freetype fontconfig libbluray libwebp libxv\
+            liba52 faac faad2 libmng mpeg2dec taglib libmad libsndfile1 \
+            libmodplug xvidcore x264 x265"
+
+#20200920 added x265
+PACKAGECONFIG_append = " cdio openssl vaapi wavpack vpx libvorbis speex xvidcore \
+                        opencore v4l libdc1394 lzma libwebp vdpau theora libbluray \
+                        mp3lame x265"
+
+PACKAGECONFIG[cdio] = "--enable-libcdio,--disable-libcdio,libcdio"
+PACKAGECONFIG[wavpack] = "--enable-libwavpack,--disable-libwavpack,wavpack"
+PACKAGECONFIG[opencore] = "--enable-libopencore-amrnb --enable-libopencore-amrwb --enable-version3,,opencore-amr"
+PACKAGECONFIG[v4l] = "--enable-libv4l2,,v4l-utils"
+PACKAGECONFIG[libdc1394] = "--enable-libdc1394,--disable-libdc1394,libdc1394"
+PACKAGECONFIG[libbluray] = "--enable-libbluray,,libbluray"
+PACKAGECONFIG[libwebp] = "--enable-libwebp,,libwebp"
+PACKAGECONFIG[xvidcore] = "--enable-libxvid,,xvidcore"
+
+# BK 20180623 removed:
+#    --disable-libxcb 
+#    --disable-libxcb-shm 
+#    --disable-libxcb-xfixes 
+#    --disable-libxcb-shape 
+#    --pkg-config=pkg-config 
+# replaced with:   --pkg-config=${WORKDIR}/recipe-sysroot-native/usr/bin/pkg-config
+
+# 20210121 *NO* add for rpi: --enable-omx --enable-omx-rpi --enable-mmal
+EXTRA_OECONF = " \
+    --disable-stripping \
+    --enable-pic \
+    --enable-shared \
+    --enable-pthreads \
+    --enable-nonfree \
+    --cross-prefix=${TARGET_PREFIX} \
+    \
+    --ld="${CCLD}" \
+    --cc="${CC}" \
+    --cxx="${CXX}" \
+    --arch=${TARGET_ARCH} \
+    --target-os="linux" \
+    --enable-cross-compile \
+    --extra-cflags="${TARGET_CFLAGS} ${HOST_CC_ARCH}${TOOLCHAIN_OPTIONS}" \
+    --extra-ldflags="${TARGET_LDFLAGS}" \
+    --sysroot="${STAGING_DIR_TARGET}" \
+    --enable-hardcoded-tables \
+    ${EXTRA_FFCONF} \
+    --libdir=${libdir} \
+    --shlibdir=${libdir} \
+    --datadir=${datadir}/ffmpeg \
+    ${@bb.utils.contains('AVAILTUNES', 'mips32r2', '', '--disable-mipsdsp --disable-mipsdspr2', d)} \
+    --cpu=${@cpu(d)} \
+    --pkg-config=${WORKDIR}/recipe-sysroot-native/usr/bin/pkg-config \
+     \
+"

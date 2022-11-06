@@ -1,0 +1,503 @@
+
+#20210106 want a generic cortex-a57 build...
+MACHINE ??= "qemuarm64"
+DISTRO ?= "poky"
+PACKAGE_CLASSES ?= "package_deb"
+EXTRA_IMAGE_FEATURES ?= "debug-tweaks dev-pkgs tools-sdk"
+USER_CLASSES ?= "buildstats image-mklibs image-prelink"
+PATCHRESOLVE = "noop"
+BB_DISKMON_DIRS ??= "\
+    STOPTASKS,${TMPDIR},1G,100K \
+    STOPTASKS,${DL_DIR},1G,100K \
+    STOPTASKS,${SSTATE_DIR},1G,100K \
+    STOPTASKS,/tmp,100M,100K \
+    ABORT,${TMPDIR},100M,1K \
+    ABORT,${DL_DIR},100M,1K \
+    ABORT,${SSTATE_DIR},100M,1K \
+    ABORT,/tmp,10M,1K"
+CONF_VERSION = "1"
+
+# for vlc: dep 'mpeg2dec' requires commercial license.
+LICENSE_FLAGS_WHITELIST += "commercial"
+
+IMAGE_FSTYPES += "tar.bz2"
+
+# in yocto, got an error when building initramfs, default maxsize is too small.
+# INITRAMFS_MAXSIZE is set in meta/conf/bitbake.conf (= 131072 kb, 128MB).
+# override here, 160MB:
+INITRAMFS_MAXSIZE = "163840"
+
+# this is supposed to remove 'avahi' pkg...
+DISTRO_FEATURES_remove = "zeroconf"
+
+DISTRO_FEATURES_remove = "wayland"
+
+# meta/conf/bitbake.conf has this line:
+# DISTRO_FEATURES_BACKFILL = "pulseaudio sysvinit bluez5 gobject-introspection-data"
+# ...this could be edited, or insert this into build*/conf/local.conf to remove:
+# DISTRO_FEATURES_BACKFILL_CONSIDERED = "pulseaudio"
+#20201013... 20201102 complete recompile with pulseaudio... 20201104 no.
+
+#20211027 comment out, now want pulseaudio...
+#DISTRO_FEATURES_remove = "pulseaudio"
+#DISTRO_FEATURES_BACKFILL_CONSIDERED = "pulseaudio"
+
+DISTRO_FEATURES_remove = "systemd"
+DISTRO_FEATURES_BACKFILL_CONSIDERED += "systemd"
+
+#current have:
+# DISTRO_FEATURES_DEFAULT="acl alsa argp bluetooth ext2 ipv4 ipv6 largefile pcmcia usbgadget usbhost wifi xattr nfs zeroconf pci 3g nfc x11 vfat"
+DISTRO_FEATURES_append = " opengl ldconfig"
+
+# host running as root, causes heaps of these warnings...
+WARN_QA_remove = "host-user-contaminated"
+# get this with cups...
+ERROR_QA_remove = "already-stripped"
+WARN_QA_remove = "already-stripped"
+# get this with cups...
+WARN_QA_remove = "patch-fuzz"
+# get this with libnss-mdns...
+ERROR_QA_remove = "unknown-configure-option"
+# my ghostscript...
+ERROR_QA_remove = "ldflags"
+# my polkit105...
+ERROR_QA_remove = "installed-vs-shipped"
+
+#get the ball rolling, pkgs (many of these will be selected anyway)...
+IMAGE_INSTALL_append = " packagegroup-core-x11 packagegroup-core-x11-xserver"
+
+#these are not automatically selected...
+IMAGE_INSTALL_append = " xf86-input-evdev xf86-input-keyboard xf86-input-mouse xf86-input-synaptics"
+#20210103 remove...
+#IMAGE_INSTALL_append = " xf86-video-cirrus xf86-video-ati xf86-video-mga xf86-video-nouveau"
+
+#add my xorg drivers... 20210103 remove...
+#IMAGE_INSTALL_append = " xf86-video-amdgpu xf86-video-apm xf86-video-ark xf86-video-ast xf86-video-chips xf86-video-glint xf86-video-i128 xf86-video-i740 xf86-video-mach64 xf86-video-mach64 xf86-video-neomagic xf86-video-nv xf86-video-r128 xf86-video-rendition xf86-video-s3 xf86-video-tdfx xf86-video-tga xf86-video-trident"
+
+#20210106 just in case these are not selected...
+IMAGE_INSTALL_append = " xf86-video-fbdev"
+
+#want these...
+#IMAGE_INSTALL_append = " acpid android-tools android-tools-conf apr apr-util apt archive-zip atkmm aufs-util bdftopcf bdwgc cairomm cdrkit cifs-utils cmake cpio cppunit cryptodev-linux dcadec debianutils dhcpcd dialog dmidecode dnsmasq docbook-xml-dtd4 docbook-xsl-stylesheets dosfstools dpkg dtc enca ethtool evince exfat-utils f2fs-tools fltk fuse gconf gdb geany git glew glibmm glm gnome-menus gnupg gparted gperf gpgme gphoto2 gptfdisk groff gsl gtkmm gtksourceview2 hdparm hexedit hiawatha hostapd hplip hunspell hyphen iceauth initramfs-live-boot initramfs-live-install initramfs-live-install-efi inotify-tools intltool iw jansson libacpi libaio libao libarchive libart-lgpl libass libassuan libavc1394 libbsd libcgi-perl libcmis libdaemon libdbd-mysql-perl libdbi-perl libdigest-sha1-perl libdvdnav libdvdread libebml libevent libexttextcat libgee libglade libgnomecanvas libgphoto2 libgsf libhtml-parser-perl libidn libksba liblangtag libmbim libmicrohttpd libmms libndp libnewt libnl liboil libpcap libplist libproxy libqmi libsdl2-image libsdl2-mixer libsdl2-ttf libsdl-ttf libsigc++-2.0 libssh libtalloc libtinyxml libtorrent liburcu liburi-perl libxaw libxfont libxkbcommon libxml-parser-perl libxml-simple-perl libxscrnsaver libxxf86dga libxxf86misc lockdev lrzsz lttng-ust lz4 makedepend man mariadb memtester mesa-demos meson mingetty minicom mkfontdir mm-common modemmanager mpg123 mpv mtr mythes nasm neard neon networkmanager ninja npth ntfs-3g-ntfsprogs ntp numlockx openbox openldap openssh packagegroup-base packagegroup-core-ssh-openssh packagegroup-core-tools-debug pangomm parted pciutils pidgin pinentry pm-utils popt ppp ppp-dialin pptp-linux prelink pseudo psmisc pure-ftpd python python3-lxml python3-pip python3-setuptools qemu quota raptor2 rasqal re2c redland rng-tools rpcbind rpm rp-pppoe rsync rtorrent rxvt-unicode serf setserial setxkbmap slang squashfs-tools sshfs-fuse startup-notification strace streamripper subversion sudo swig sysfsutils tar udev-extraconf usb-modeswitch usb-modeswitch-data usbutils vigra vim vte wget wpa-supplicant wvdial wvstreams xbitmaps xcursorgen xdelta3 xdg-utils xdotool xev xfontsel xgamma xmessage xmlto xorriso xprop xrdb xsetmode xsetroot xterm xwd xwininfo yajl yasm"
+
+#add more deps not in PACKAGECONFIG in the recipe...
+#IMAGE_INSTALL_append = " libvorbis lame libsdl2 speex libvdpau libvpx x265 libxv"
+#DEPENDS_append_ffmpeg = " libvorbis lzma mp3lame openssl sdl2 speex vaapi vdpau vpx x265 xv"
+#PACKAGECONFIG_append_ffmpeg = " libvorbis lzma mp3lame openssl sdl2 speex vaapi vdpau vpx x265 xv"
+IMAGE_INSTALL_append = " ffmpeg"
+
+IMAGE_INSTALL_append = " ghostscript cups cups-filters qpdf gimp"
+#IMAGE_INSTALL_append = " ghostscript cups cups-filters"
+
+IMAGE_INSTALL_append = " epiphany"
+
+#add more, for which I have .bbappend or .bb files... (or did in thud)
+#20220905 vte9 is for gtk2, vte is gtk3...
+IMAGE_INSTALL_append = " networkmanager dialog graphite2 man-db wget php pinentry evince gnome-menus gphoto2 cdrkit libcdio libdvdcss mpv mtr npth ntp vlc rng-tools rxvt-unicode cifs-utils glm gnupg gpgme libcap pidgin vim vte vte9"
+
+#filesystem pkgs... 
+IMAGE_INSTALL_append = " aufs-util e2fsprogs exfat-utils f2fs-tools fuse-exfat mtools ntfs-3g-ntfsprogs sshfs-fuse xorriso"
+
+#dev tools...
+#failed:  cargo  rust.  20210103 remove: syslinux
+IMAGE_INSTALL_append = " cmake desktop-file-utils dmidecode docbook-xml-dtd4 docbook-xsl-stylesheets dpkg file flex gdb git glade gptfdisk intltool lemon libgee m4 make makedepend meson nasm ninja orc patch perl php pkgconfig qemu re2c rpm rsync squashfs-tools subversion vala valgrind yasm xmlto xcb-proto xorgproto"
+#want these perl modules...
+IMAGE_INSTALL_append = " libxml-parser-perl libdbd-mysql-perl libdbi-perl libcgi-perl libdigest-sha1-perl libhtml-parser-perl liburi-perl libxml-simple-perl"
+#want these python modules...
+IMAGE_INSTALL_append = " python3-lxml python3-pip"
+
+#core utilities...
+IMAGE_INSTALL_append = " bash bc busybox bzip2 coreutils diffutils ethtool eudev findutils gettext gzip hdparm iptables kbd mingetty minicom ncurses parted procps read-edid readline sed slang sudo sysfsutils tar unzip util-linux util-macros xdelta3 xdg-utils xz zip zstd"
+
+#connectivity... fail: libnma (dep of network-manager-applet) ...ok, i have my special hacked source anyway.
+# removed ifplugd, as it is in recipes-quirky
+#IMAGE_INSTALL_append = " bluez5 dhcpcd iproute2 modemmanager networkmanager netcat openssh openssl ppp pure-ftpd rtorrent wpa-supplicant wvdial wvstreams"
+#20201013 take out modemmanager...
+IMAGE_INSTALL_append = " bluez5 dhcpcd iproute2 networkmanager netcat openssh openssl ppp pure-ftpd rtorrent wpa-supplicant wvdial wvstreams"
+
+#x apps...
+IMAGE_INSTALL_append = " bdftopcf iceauth mkfontscale rgb setxkbmap xauth xdpyinfo xev xfontsel xgamma xhost xinit xinput xkbcomp xmessage xmodmap xprop xrandr xrdb xset xsetroot xterm xvinfo xwd xwininfo"
+
+#gtk apps...
+IMAGE_INSTALL_append = " geany geany-plugins gparted  yad"
+
+#image libs...
+IMAGE_INSTALL_append = " giflib"
+
+#infrastructure... got gtksourceview2, libart-lgpl, libgnomecanvas, libglade out of pyro...
+# fail: libglade
+IMAGE_INSTALL_append = " gtksourceview2 hunspell libart-lgpl liberation-fonts libgnomecanvas"
+
+#imported recipes-quirky from thud... fail:  , gdk-pixbuf0 & gtk1 (dep glib1 fail),, gettext0-static, e2fsprogs-static, coreutils-static,, xine-ui,,,,,,, noice-static, nnn-static,,, mped-static, ndiswrapper ndiswrapper-exe, make-static, libcap-static,, idump-static,,, gnupg1-static,,,, busybox-initramfs-static, binutils-static,
+# removed:  iwd ostree flatpak
+# fail, i give up: dictd-client, xsane,,  20210103 failed:  xresprobe     20210409 fail: inkscapelite
+#20220807 remove bacon:  bacon bacon-hug bacon-hug-imports 20220811 restore
+IMAGE_INSTALL_append = " bacon bacon-hug bacon-hug-imports adbfs appstream-glib apulse arp-scan aumix bbc-provided bbe bcrypt bluepup-tray busybox-static cddetect cddetect-quick cgtkcalc chrpath ctorrent curlftpfs dia didiwiki disktype dvdauthor dvd-close dvd+rw-tools empty fpm2 freememapplet-tray galculator gcab gccmakedep gcolorsel gdmap gfnrename gfontsel gftp gif2lss gifsicle glipper-lite gmeasures gnet gpart gphotofs gpicview gpptp grisbi gtk-chtheme gtkdialog gtkhash gtklp gview gwhere gxmessage hardinfo help2man helpsurfer homebank hostname hotplug2stdout ifplugd ifplugd-old imake installwatch isomaster jwm ktsuss leafpad libdvdcss libexif-gtk libgtkhtml libmaa libofx libpng12 libseccomp libsystem libtommath libtubo mdview metamail mhwaveedit minixcal mirdir modem-stats mped mpscan mtpaint nbtscan nenscript netpbm network-tray normalize notecase opensp osmo patchutils peasyscale-exec peasyscan-exec pekwm pflask planner pmcputemp pnscan polkit105 powerapplet-tray puppyinputdetect puppyserialdetect retrovol rman rox-filer rubix sakura sane-backends scale2x setvol sgml-common ssh-gui sshpass stat ufiformat uget unclutter unrar vamps vcdimager vobcopy wavplay whois xarchive xcalc xclip xclipboard xcur2png xdg-puppy xdialog xfdiff-cut xine-lib xload xsoldier xvidtune xvkbd"
+
+#20200922 first import into woofq, got all these missing...
+#note, these missing are probably libreoffice deps:
+# 
+#20201220 with k5.10, fail:  strace
+IMAGE_INSTALL_append = " acpid apt bdwgc cryptodev-linux enca glew gnome-doc-utils-stub ijs inotify-tools libao libass libcec libproxy libxkbcommon lockdev memtester mesa-demos neon numlockx openldap p8platform pciutils pm-utils pptp-linux psmisc quota raptor2 rpcbind setserial streamripper vorbis-tools xcursorgen xdotool xlockmore xsetmode yajl"
+#doing a diff from before, these are added:
+#acpid apt bdwgc cryptodev-linux debianutils enca glew gnome-doc-utils-stub ijs inotify-tools libao libass libcec libproxy libxkbcommon lockdev memtester mesa-demos neon numlockx openldap p8platform pciutils pm-utils pptp-linux psmisc quota raptor2 rpcbind setserial strace streamripper vorbis-tools xcursorgen xdotool xlockmore xsetmode yajl
+#ah ha, extra ones are: debianutils
+
+#20200924 more... 20220814 picscale now works...
+IMAGE_INSTALL_append = " hiawatha pup-tools picscale usb-modeswitch usb-modeswitch-data usbutils"
+#20200925...  
+IMAGE_INSTALL_append = " audacious audacious-plugins celluloid network-manager-applet"
+#20200926 samba... libtevent libtdb are deps of samba...
+IMAGE_INSTALL_append = " libtevent libtdb gnome-keyring gsl nmap pnmixer refind xconsole zarfy"
+
+#20200928 complete rebuild. rolled pango back, 1.44.7 to 1.42.4 -- see note in recipe.
+# also a patch for shared-mime-info: /bin/ash shebang
+
+#works with libnotify, popup messages...
+IMAGE_INSTALL_append = " notification-daemon"
+
+#20201001
+# # bitbake -e core-image-minimal | grep "^DISTRO_FEATURES"
+# DISTRO_FEATURES="acl alsa argp bluetooth ext2 ipv4 ipv6 largefile pcmcia usbgadget usbhost wifi xattr nfs  pci 3g nfc x11 vfat largefile opengl ptest multiarch  vulkan opengl ldconfig pulseaudio sysvinit gobject-introspection-data"
+# DISTRO_FEATURES_BACKFILL="pulseaudio sysvinit gobject-introspection-data ldconfig"
+# DISTRO_FEATURES_BACKFILL_CONSIDERED="systemd"
+# DISTRO_FEATURES_DEFAULT="acl alsa argp bluetooth ext2 ipv4 ipv6 largefile pcmcia usbgadget usbhost wifi xattr nfs zeroconf pci 3g nfc x11 vfat"
+DISTRO_FEATURES_remove = "ptest"
+DISTRO_FEATURES_remove = "vulkan"
+DISTRO_FEATURES_remove = "pcmcia"
+DISTRO_FEATURES_remove = "multiarch"
+#20201001 wireless utilities, might be useful...
+IMAGE_INSTALL_append = " libnl iw"
+
+#20201002 after 20201001 changes, these are missing (plus others)...
+# tzdata socat libcheck gspell gnome-desktop3 ed vulkan-loader
+# gspell and gnome-desktop3 seem to be deps that are no longer needed, but keep them...
+# ...i did change the evince and geany recipes, to gtk2 versions, maybe that did it.
+IMAGE_INSTALL_append = " tzdata socat gspell gnome-desktop3 ed"
+
+#20201006 want these for pulseaudio... plus: blueman, scons, gutenprint...
+#IMAGE_INSTALL_append = " libcanberra pavucontrol blueman scons gutenprint"
+#20201013 take out libcanberra & pavucontrol...  20210103 failed:  gutenprint
+IMAGE_INSTALL_append = " blueman scons"
+
+#20201007 trying to get bt audio working, a script wants this...
+IMAGE_INSTALL_append = " bluez-tools expect"
+
+#20201008 usb-modeswitch and expect need tcl, however, usb-modeswitch will work with jimtcl...
+# and for old-times sake, add tk
+IMAGE_INSTALL_append = " jimtcl tk"
+
+#20201009 need python3-prctl to run bluetooth-autoconnect
+IMAGE_INSTALL_append = " python3-prctl"
+
+#20201012 alsamixergui requires fltk
+#IMAGE_INSTALL_append = " fltk alsamixergui iotop"
+#20201013 alsamixergui is crap, hangs...
+#20220519 replace iotop with iotop-py....
+IMAGE_INSTALL_append = " fltk iotop-py"
+
+#20201013 have decided to remove pulseaudio, modemmanager (see #20201013 above)
+IMAGE_INSTALL_append = " bluez-alsa alsa-plugins"
+
+#20201021
+IMAGE_INSTALL_append = " wmctrl libcanberra gnome-bluetooth openobex obexftp obexfs"
+
+#20201102
+IMAGE_INSTALL_append = " xf86-input-wacom libxklavier libgnomekbd restarter"
+
+#20201228 easyos dunfell host for oe build, needs rpcgen, no longer in glibc, now in 
+IMAGE_INSTALL_append = " rpcsvc-proto"
+
+#20210109
+IMAGE_INSTALL_append = " ccrypt"
+
+#20210121  20210123 removed:  libldb --clashes with samba install
+IMAGE_INSTALL_append = " tigervnc samba smbnetfs"
+
+#20210124
+IMAGE_INSTALL_append = " libvdpau-va-gl"
+
+#20201104 rem.
+##20201102 doing a COMPLETE rebuild, with pulseaudio. see also above, have reinstated FEATURE for pulseaudio.
+#20211027 pulseaudio is back...
+IMAGE_INSTALL_append = " pulseaudio pavucontrol"
+
+#20210407 bring back modemmanager (note, networkmanager & networkmanager-applet recipes modified)...
+#20210407 recipes affected by adding jack: ffmpeg mpv xine-lib mhwaveedit audacious
+#20210409 pngoverlay-cairo replaces 'pngoverlay' in the 'pup-tools' pkg...
+#20210528 removed: jack
+#20211027 remove modemmanager, bring back jack
+IMAGE_INSTALL_append = " pngoverlay-cairo jack"
+
+#20210410 want inkscape...
+#IMAGE_INSTALL_append = " double-conversion potrace gdl inkscape"
+#20210415 aarch64: gdl failed. this is only required for inkscape 1.0*
+#20210501 aarch64: fixed gdl, so bring back inkscape...
+#   inkscape 1.1 does not use it. for now, compile 1.1 in running easyos. ...no, 1.1 freezes.
+IMAGE_INSTALL_append = " double-conversion potrace gdl inkscape"
+
+#20210411 deps reqd by libreoffice...
+IMAGE_INSTALL_append = " hyphen libabw libcdr libcmis libe-book libetonyek libexttextcat libfreehand libgltf liblangtag libmspub libmwaw libodfgen libpagemaker librevenge libvisio libwpd libwpg libwps lpsolve mdds-1.2 mdds-1.5 mythes rasqal redland vigra"
+
+#20210413 po4a is a perl script, needed to compile modem-manager-gui
+#20210414 itstool (perl) needed to install modem-manager-gui
+IMAGE_INSTALL_append = " po4a itstool"
+#...adds these deps: liblocale-gettext-perl libmime-charset-perl libmodule-build-perl-native libsombok3 libterm-readkey-perl libterm-readkey-perl-native libtext-charwidth-perl libtext-wrapi18n-perl libunicode-linebreak-perl
+
+#20210421 removed, coz it built a x86_64 binary...
+##20210418 finally succeeded (needs fltk)... 20210502 fixed...
+IMAGE_INSTALL_append = " flsynclient"
+
+#20210419 sct needed by 'brightness-control' noarch pet...
+IMAGE_INSTALL_append = " setcolortemperature"
+
+#20210422
+IMAGE_INSTALL_append = " solvespace"
+
+#20210426
+IMAGE_INSTALL_append = " usbview"
+
+#20210608
+IMAGE_INSTALL_append = " brlaser"
+
+#20210612
+IMAGE_INSTALL_append = " yaf-splash"
+
+#20210615
+IMAGE_INSTALL_append = " libreoffice"
+
+#20210625
+IMAGE_INSTALL_append = " hplip"
+
+#20210908 needed to compile firefox in running easy, actually, cbindgen needs clang...
+#20210911 failed. 'clang-tblgen' is aarch64...
+# /bin/sh: /mnt/sda1/nvme/oe-builds/oe-quirky/build-aarch64/tmp/work/aarch64-poky-linux/llvm/9.0.1-r4/build/NATIVE/bin/clang-tblgen: cannot execute binary file: Exec format error
+# requires manual intervention: copy 'clang-tblgen' from amd64 build, then run "touch clang-tblgen"
+#20220610 r5: fail: llvm -- take it out...
+#IMAGE_INSTALL_append = " llvm"
+
+#20210912 manages the kernel keyrings
+IMAGE_INSTALL_append = " keyutils"
+
+#20210915 build old yad gtk2 version...
+IMAGE_INSTALL_append = " yad0"
+
+#20210922 want nodejs to compile chromium (in running easyos).
+# deps: c-ares libuv nghttp2 brotli cunit libyuv
+IMAGE_INSTALL_append = " nodejs"
+
+#20211008 x11vnc adds dep: libvncserver
+IMAGE_INSTALL_append = " dropbear x11vnc gtk-vnc"
+
+#20211010 freerdp has deps: ccid pcsc-lite
+# remmina adds deps: libsodium libssh ---already have libssh2 why does remmina want the old version?
+IMAGE_INSTALL_append = " xrdp xorgxrdp freerdp remmina"
+
+#20211019 would like these in devx
+IMAGE_INSTALL_append = " python3-asn1crypto python3-cffi python3-cryptography \
+ python3-cython python3-docutils python3-idna python3-mako python3-scons python3-six"
+
+#20211030 python pkgs needed to compile libcamera, so i would like them in devx
+IMAGE_INSTALL_append = " libcamera python3-pyyaml python3-ply python3-jinja2 python3-markupsafe"
+
+#20211119
+IMAGE_INSTALL_append = " libxres"
+
+#20211128 nemiver debugger needs gtksourceviewmm3 (already have gtkmm3)
+# or, older nemiver needs gtksourceviewmm2 and gtkmm (already have gtksourceview2)
+# don't have a recipe for gtksourceviewmm2, have compiled it in running easyos.
+# libgtop is a dep of nemiver. nemiver also compiled in running easyos.
+IMAGE_INSTALL_append = " gtksourceview3 gtkmm libgtop"
+#tools for compiling gnome apps:
+IMAGE_INSTALL_append = " gnome-common yelp-tools yelp-xsl"
+
+#20211129 need libidl for old versions of seamonkey (1.1.x, 2.0.x)
+IMAGE_INSTALL_append = " libidl"
+
+#20211202
+IMAGE_INSTALL_append = " mercurial"
+
+#20211209 claws-mail may optionally use these:
+#20220610 r5: fail: bogofilter
+#IMAGE_INSTALL_append = " litehtml libetpan bogofilter claws-mail"
+IMAGE_INSTALL_append = " litehtml libetpan claws-mail"
+
+#20211218 remove, don't want qt4...
+##20211216 now have meta-qt4 layer. qmmp has 2 deps: qt4-native qt4-x11-free
+#IMAGE_INSTALL_append = " qmmp fotowall quicky"
+
+#20211217 trying meta-qt5 again...
+IMAGE_INSTALL_append = " qtbase qtdeclarative qtxmlpatterns qttools scribus"
+#20211218
+IMAGE_INSTALL_append = " qtx11extras qtmultimedia qt5-styleplugins qtscript qtsvg vym"
+#hmmm, libpcre2 built for scribus, but not there...
+IMAGE_INSTALL_append = " libpcre libpcre2"
+
+#20211218 'lives' video editor deps...
+#20220610 r5: FAIL: libdv -- take out 'lives' and 'mjpegtools' as well...
+#IMAGE_INSTALL_append = " libebml libmatroska mjpegtools libdv libsdl-gfx"
+IMAGE_INSTALL_append = " libebml libmatroska libsdl-gfx"
+#20211219 more deps... 
+IMAGE_INSTALL_append = " sox unicap fftw imagemagick"
+
+#20211220 deps for obs-studio...
+IMAGE_INSTALL_append = " swig luajit mbedtls libglvnd"
+
+#20211226  20220610 r5: remove lives...
+#IMAGE_INSTALL_append = " lives obs"
+IMAGE_INSTALL_append = " obs"
+
+#20220105
+IMAGE_INSTALL_append = " qtquickcontrols2 fdk-aac sip3 python3-pyqt5 mlt"
+
+#20220111 needed by flowblade:
+IMAGE_INSTALL_append = " python3-numpy python3-pillow python3-nose"
+
+#20220115 for flowblade, lives, mlt...
+IMAGE_INSTALL_append = " frei0r"
+
+#20220116 opencv is an optional dep of mlt, lives, flowblade...
+# opencv these new deps: ade gflags glog libeigen libunwind tbb 
+IMAGE_INSTALL_append = " ade gflags glog libeigen libunwind tbb opencv"
+
+#20220118 deps of shotcut video editor...
+#note, qtquickcontrols different from qtquickcontrols2
+IMAGE_INSTALL_append = " qtwebsockets qtquickcontrols"
+
+#20220119 
+IMAGE_INSTALL_append = " qtquick3d qtquicktimeline"
+
+#20220126 more gstreamer pkgs...
+# already have: gstreamer1.0 gstreamer1.0-plugins-bad gstreamer1.0-plugins-base
+#  ...required by epiphany, freerdp, opencv, qtmultimedia, remmina, webkitgtk
+# let's explictly list them here:
+IMAGE_INSTALL_append = " gstreamer1.0 gstreamer1.0-plugins-bad gstreamer1.0-plugins-base"
+#add more...
+# now have meta-gstreamer1.0 and gst-validate name change to gst-devtools
+IMAGE_INSTALL_append = " gstreamer1.0-plugins-good gstreamer1.0-libav \
+    gstreamer1.0-rtsp-server gstreamer1.0-python gst-devtools gstreamer1.0-plugins-ugly \
+    libomxil gstreamer1.0-omx gstreamer1.0-vaapi"
+
+#20220128 more deps for pitivi video editor...
+IMAGE_INSTALL_append = " libpeas pyxdg python3-matplotlib python3-kiwisolver \
+   python3-dateutil python3-cycler python3-pytz gst-editing-services"
+
+#20220131 yelp is viewer for gnome doc files (.page), needed by ptitivi
+# (unfortunately requires webkitgtk)
+IMAGE_INSTALL_append = " yelp"
+
+#20220310
+IMAGE_INSTALL_append = " recordmydesktop"
+
+#20220411 oomox is a python app for creating gtk2 and gtk3 themes,
+# needs python3-pyyaml (already listed), python3-pystache, sassc, libsass
+IMAGE_INSTALL_append = " python3-pystache sassc libsass"
+
+#20220422 portaudio needed by guvcview
+IMAGE_INSTALL_append = " portaudio-v19 guvcview"
+
+#20220423 gtk2 and gtk3 widget factory
+IMAGE_INSTALL_append = " awf"
+
+#20220426 deps for droidcam
+IMAGE_INSTALL_append = " libplist libusbmuxd droidcam"
+
+#20220504 display android device on pc...
+IMAGE_INSTALL_append = " scrcpy"
+
+#20220517
+IMAGE_INSTALL_append = " redshift"
+
+#20220606
+IMAGE_INSTALL_append = " hexchat"
+
+#20220611
+IMAGE_INSTALL_append = " pa-applet"
+
+#20220807 utilities rewritten in C, taken out of pup-tools...
+#20220817 they are back into pup-tools
+#IMAGE_INSTALL_append = " popup pup-event-ipc"
+
+#20220814 add nim programming language...
+IMAGE_INSTALL_append = " nim"
+
+#20220817
+IMAGE_INSTALL_append = " libxaw3dxft"
+
+#20220905 gui package manager
+IMAGE_INSTALL_append = " synaptic"
+
+#20220914 ibus is reqd by zoom. unicode-ucd is a dep of ibus
+IMAGE_INSTALL_append = " unicode-ucd ibus"
+
+#20220928 note these do build: rust-native, rust-llvm-native
+IMAGE_INSTALL_append = " rust-llvm libstd-rs"
+
+#20221005 needed by supertuxkart
+IMAGE_INSTALL_append = " openal-soft"
+
+#20221008
+IMAGE_INSTALL_append = " libsdl2 libsdl2-image libsdl2-net libsdl2-mixer libsdl2-ttf"
+
+#20221015 conan needed to compile audacity...
+IMAGE_INSTALL_append = " python3-conan"
+
+
+
+#2021-01-03 comment out... 20210106 bring back...
+##20201219 bump to 5.10 (from 5.4) kernel...
+#20220609 r5: bump 5.10 to 5.15 kernel...
+PREFERRED_PROVIDER_virtual/kernel_forcevariable = "linux-stable"
+PREFERRED_PROVIDER_virtual/kernel_forcevariable = "linux-stable"
+PREFERRED_VERSION_linux-stable = "5.15%"
+LINUX_STABLE_DOWNLOAD = "tarball"
+##KBUILD_DEFCONFIG = "x86_64_defconfig"
+##KCONFIG_MODE = "alldefconfig"
+#
+##20201220 still using linux-libc-headers 5.4, try this...
+#20220609 r5: bump 5.8 to 5.10...
+PREFERRED_VERSION_linux-libc-headers = "5.10%"
+PREFERRED_VERSION_nativesdk-linux-libc-headers = "5.10%"
+
+#20201220 my computer runs hot. defaults here are "-j 4" and "4"...
+PARALLEL_MAKE = "-j 2"
+PARALLEL_MAKEINST = "-j 2"
+BB_NUMBER_THREADS = "3"
+
+##20210103 raspberrypi3 (meta-kernel layer)...
+#include conf/linux-mainline/bsp/raspberrypi3.inc
+
+
+#20201220 fail:
+# strace 
+
+#20210103 failed, removed from above:
+# network-manager-applet  gutenprint xresprobe restarter netpbm 
+# network-manager-applet, gutenprint, and netpbm try to run binaries,
+# but this only works if host-system and target system are same cpu type. I have
+# host-system x86_64, target aarch64, have hacked network-manager-applet and
+# netpbm to build, but gutenprint is too complicated.
+#20210105:
+# reducing the removed pkgs:
+# gutenprint xresprobe
+
+#i give up...
+# dictd-client ghasher samba xsane
+
+#20210625 doing a complete recompile, bump "r2" to "r3" and PR_NUM "2" to "3"...
+#20210407 doing a complete recompile, bump "r1" to "r2" and PR_NUM "1" to "2"...
+#20210825 bump 3 to 4...
+#20220609 bump 4 to 5...
+#20210121 radical, this globally changes the base revision from r0...
+PR = "r5"
+#.bbappend recipes can use this to bump PR. ex: PR = "r${@int(PR_NUM) + 1}"
+PR_NUM = "5"
+
+#20210122 ***TEST***
+#20210122 ***SET THIS FOR TARGET BOARD***
+#note, default is COMPATIBLE_MACHINE="qemuarm64". notice the "|" to add another...
+#COMPATIBLE_MACHINE_append = "|rpi"
+#ex: meta-quirky/recipes-graphics/mesa/mesa_%.bbappend, have PACKAGECONFIG_append_rpi = "..."
+#or leave this variable empty for a generic aarch64 build.
+#note: my intention is this will build some rpi-specifics but still run on any aarch64 board.
+#MACHINE_FEATURES_append = " vc4graphics"

@@ -1,0 +1,176 @@
+#20210615
+
+# removed     clucene-core 
+# added neon neon-native
+DEPENDS = " \
+    python3-lxml-native \
+    ccache-native \
+    archive-zip-native \
+    gperf-native \
+    bison-native \
+    zip-native \
+    ${BPN}-native \
+    \
+    curl \
+    icu \
+    expat \
+    poppler \
+    harfbuzz \
+    openldap \
+    nss \
+    zlib \
+    jpeg \
+    libpng \
+    apr \
+    serf \
+    libatomic-ops \
+    lcms \
+    harfbuzz \
+    cppunit \
+    glew \
+    openssl \
+    cups \
+    gstreamer1.0-plugins-base \
+    \
+    glm \
+    redland \
+    libabw \
+    libwps \
+    libwpg \
+    libwpd \
+    libcdr \
+    librevenge \
+    libcmis \
+    libfreehand \
+    libe-book \
+    libmwaw \
+    libetonyek \
+    libvisio \
+    libmspub \
+    libpagemaker \
+    libodfgen \
+    libgltf \
+    libexttextcat \
+    vigra \
+    hunspell \
+    mythes \
+    hyphen \
+    graphite2 \
+    liblangtag \
+    lpsolve \
+    gpgme \
+    mdds-1.5 \
+    neon \
+    neon-native \
+"
+
+# took out     --with-system-clucene 
+# added --with-system-neon
+EXTRA_OECONF = " \
+    --without-doxygen \
+    --enable-release-build \
+    --enable-python=system \
+    --disable-skia \
+    ${@oe.utils.parallel_make_argument(d, '--with-parallelism=%d')} \
+    \
+    --with-system-boost \
+    --with-boost-date-time=boost_date_time \
+    --with-boost-filesystem=boost_filesystem \
+    --with-boost-locale=boost_locale\
+    --with-boost-iostreams=boost_iostreams\
+    --with-boost-system=boost_system\
+    \
+    --with-system-cairo \
+    --with-system-epoxy \
+    --with-system-curl \
+    --with-system-libpng \
+    --with-system-jpeg \
+    --with-system-libxml \
+    --with-system-graphite \
+    --with-system-harfbuzz \
+    --with-system-icu \
+    --with-system-expat \
+    --with-system-lcms2 \
+    --with-system-nss \
+    --with-system-cppunit \
+    --with-system-libabw \
+    --with-system-libcdr \
+    --with-system-libebook \
+    --with-system-libfreehand \
+    --with-system-hunspell \
+    --with-system-mythes \
+    --with-system-libcmis \
+    --with-system-libpagemaker \
+    --with-system-glm \
+    --with-system-libetonyek \
+    --with-system-libvisio \
+    --with-system-libexttextcat \
+    --with-system-altlinuxhyph \
+    --with-system-librevenge \
+    --with-system-libabw \
+    --with-system-libcdr \
+    --with-system-libebook \
+    --with-system-libfreehand \
+    --with-system-liblangtag \
+    --with-system-zlib \
+    --with-system-lpsolve \
+    --with-system-libwpd \
+    --with-system-libwpg \
+    --with-system-libwps \
+    --with-system-libcdr \
+    --with-system-libmspub \
+    --with-system-libmwaw \
+    --with-system-mdds \
+    --without-java \
+    --with-lang=ALL \
+    \
+    --disable-coinmp \
+    --with-tls=nss \
+    --without-galleries \
+    \
+    --with-system-poppler \
+    --with-system-openldap \
+    --with-system-apr \
+    --with-system-serf \
+    --with-system-libatomic_ops \
+    --with-system-icu \
+    --with-system-expat \
+    --with-system-curl \
+    --with-system-openssl \
+    \
+    --with-system-cppunit \
+    --with-system-glm \
+    --with-system-redland \
+    --with-system-libabw \
+    --with-system-libcmis \
+    --with-system-libebook \
+    --with-system-libetonyek \
+    --with-system-libvisio \
+    --with-system-libpagemaker \
+    --with-system-libodfgen \
+    --with-system-libexttextcat \
+    --with-system-mythes \
+    --with-system-altlinuxhyph \
+    --with-system-gpgmepp \
+    \
+    --with-external-dict-dir=${datadir}/hunspell \
+    --with-system-dicts \
+    --with-system-neon \
+"
+
+# removed     postgresql 
+PACKAGECONFIG = " \
+    gtk3 \
+    mariadb \
+"
+
+#um, think need to do complete oe recompile, as host changed from glibc 2.31 to 2.33...
+XXXdo_configure_prepend() {
+ #weird, zip in zip-native doesn't work...
+ cp -a -f /usr/bin/zip ${WORKDIR}/recipe-sysroot-native/usr/bin/
+}
+
+do_compile_prepend() {
+ #disable this check...
+ sed -i -e 's%^check-if-root:%check-if-root:\n\ncheck-if-rootXXX:%' ${B}/Makefile
+}

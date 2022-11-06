@@ -1,0 +1,13 @@
+diff -Naur git.orig/mkspecs/linux-oe-g++/qmake.conf git/mkspecs/linux-oe-g++/qmake.conf
+--- git.orig/mkspecs/linux-oe-g++/qmake.conf	2021-12-15 23:25:18.826928423 +0800
++++ git/mkspecs/linux-oe-g++/qmake.conf	2021-12-16 00:49:18.967074231 +0800
+@@ -16,7 +16,7 @@
+ 
+ # *FLAGS from gcc-base.conf
+-QMAKE_CFLAGS                += $$(OE_QMAKE_CFLAGS)
+-QMAKE_CXXFLAGS              += $$(OE_QMAKE_CXXFLAGS)
++QMAKE_CFLAGS                += $$(OE_QMAKE_CFLAGS) -fpermissive
++QMAKE_CXXFLAGS              += $$(OE_QMAKE_CXXFLAGS) -fpermissive
+ QMAKE_LFLAGS                += $$(OE_QMAKE_LDFLAGS)
+ 
+ include(../common/g++-unix.conf)

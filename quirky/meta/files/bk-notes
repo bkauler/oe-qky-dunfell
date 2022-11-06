@@ -1,0 +1,4 @@
+
+20210528
+'common-licenses' folder from openembedded-core latest in 'master' repo.
+glibc-locale 2.33 wants GPL-2.0-only and LGPL-2.1-only.

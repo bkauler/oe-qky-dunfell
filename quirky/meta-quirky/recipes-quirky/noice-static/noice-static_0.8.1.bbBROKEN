@@ -1,0 +1,37 @@
+DESCRIPTION = "Console file manager."
+HOMEPAGE = "https://git.2f30.org/noice/"
+SECTION = "console/utils"
+PRIORITY = "optional"
+LICENSE = "BSD"
+
+LIC_FILES_CHKSUM = "file://LICENSE;md5=4104e1e2bea07646c3b46759e4ca6d55"
+
+DEPENDS = "ncurses"
+SRC_URI = "http://distro.ibiblio.org/easyos/source/alphabetical/n/noice-${PV}.tar.gz"
+
+SRC_URI[md5sum] = "3b8ac195f5af7aea1d2ac1537419c666"
+SRC_URI[sha256sum] = "18167111166e7651dec24d9b3aeaf3c84b09c09957015ceeff2c412409bd8d04"
+
+S = "${WORKDIR}/noice-${PV}"
+
+#PR = "r0"
+# 20210121 PR_NUM is defined in local.conf...
+PR = "r${@int(PR_NUM) + 1}"
+
+inherit base
+
+#CFLAGS += " -O2"
+
+do_configure () {
+    true
+}
+
+do_compile() {
+	oe_runmake CFLAGS="${CFLAGS} -O2"
+}
+
+do_install() {
+	oe_runmake install DESTDIR=${D} PREFIX=/usr
+}
+
+SUMMARY = ""

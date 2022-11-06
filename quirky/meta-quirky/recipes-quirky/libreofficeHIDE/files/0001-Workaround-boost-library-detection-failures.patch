@@ -1,0 +1,132 @@
+From b5a988f79520d3ea39af37e9d726cf0aafb36019 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Andreas=20M=C3=BCller?= <schnitzeltony@gmail.com>
+Date: Sat, 3 Aug 2019 14:51:00 +0200
+Subject: [PATCH] Workaround boost library detection failures
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Upstream-Status: Pending
+
+Signed-off-by: Andreas Müller <schnitzeltony@gmail.com>
+---
+ m4/ax_boost_date_time.m4  | 11 +++++------
+ m4/ax_boost_filesystem.m4 | 11 +++++------
+ m4/ax_boost_iostreams.m4  | 11 +++++------
+ m4/ax_boost_locale.m4     | 11 +++++------
+ m4/ax_boost_system.m4     | 11 +++++------
+ 5 files changed, 25 insertions(+), 30 deletions(-)
+
+diff --git a/m4/ax_boost_date_time.m4 b/m4/ax_boost_date_time.m4
+index 9b9ec67..0baac6c 100644
+--- a/m4/ax_boost_date_time.m4
++++ b/m4/ax_boost_date_time.m4
+@@ -92,12 +92,11 @@ AC_DEFUN([AX_BOOST_DATE_TIME],
+                 fi
+ 
+             else
+-               for ax_lib in $ax_boost_user_date_time_lib boost_date_time-$ax_boost_user_date_time_lib; do
+-				      AC_CHECK_LIB($ax_lib, main,
+-                                   [BOOST_DATE_TIME_LIB="-l$ax_lib"; AC_SUBST(BOOST_DATE_TIME_LIB) link_date_time="yes"; break],
+-                                   [link_date_time="no"])
+-                  done
+-
++               # ld does not like our LDFLAGS so just trust we set library correctly...
++               ax_lib=${ax_boost_user_date_time_lib}
++               BOOST_DATE_TIME_LIB="-l$ax_lib"
++               AC_SUBST(BOOST_DATE_TIME_LIB)
++               link_date_time="yes"
+             fi
+             if test "x$ax_lib" = "x"; then
+                 AC_MSG_ERROR(Could not find a version of the boost date_time library!)
+diff --git a/m4/ax_boost_filesystem.m4 b/m4/ax_boost_filesystem.m4
+index b571f89..3996791 100644
+--- a/m4/ax_boost_filesystem.m4
++++ b/m4/ax_boost_filesystem.m4
+@@ -96,12 +96,11 @@ AC_DEFUN([AX_BOOST_FILESYSTEM],
+ 				done
+ 		    fi
+             else
+-               for ax_lib in $ax_boost_user_filesystem_lib boost_filesystem-$ax_boost_user_filesystem_lib; do
+-				      AC_CHECK_LIB($ax_lib, exit,
+-                                   [BOOST_FILESYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_FILESYSTEM_LIB) link_filesystem="yes"; break],
+-                                   [link_filesystem="no"])
+-                  done
+-
++               # ld does not like our LDFLAGS so just trust we set library correctly...
++               ax_lib=${ax_boost_user_filesystem_lib}
++               BOOST_FILESYSTEM_LIB="-l$ax_lib"
++               AC_SUBST(BOOST_FILESYSTEM_LIB)
++               link_filesystem="yes"
+             fi
+             if test "x$ax_lib" = "x"; then
+                 AC_MSG_ERROR(Could not find a version of the boost filesystem library!)
+diff --git a/m4/ax_boost_iostreams.m4 b/m4/ax_boost_iostreams.m4
+index 803d3a3..d165f46 100644
+--- a/m4/ax_boost_iostreams.m4
++++ b/m4/ax_boost_iostreams.m4
+@@ -95,12 +95,11 @@ AC_DEFUN([AX_BOOST_IOSTREAMS],
+                 fi
+ 
+             else
+-               for ax_lib in $ax_boost_user_iostreams_lib boost_iostreams-$ax_boost_user_iostreams_lib; do
+-				      AC_CHECK_LIB($ax_lib, main,
+-                                   [BOOST_IOSTREAMS_LIB="-l$ax_lib"; AC_SUBST(BOOST_IOSTREAMS_LIB) link_iostreams="yes"; break],
+-                                   [link_iostreams="no"])
+-                  done
+-
++               # ld does not like our LDFLAGS so just trust we set library correctly...
++               ax_lib=${ax_boost_user_iostreams_lib}
++               BOOST_IOSTREAMS_LIB="-l$ax_lib"
++               AC_SUBST(BOOST_IOSTREAMS_LIB)
++               link_iostreams="yes"
+             fi
+             if test "x$ax_lib" = "x"; then
+                 AC_MSG_ERROR(Could not find a version of the boost iostreams library!)
+diff --git a/m4/ax_boost_locale.m4 b/m4/ax_boost_locale.m4
+index adaedf0..468d708 100644
+--- a/m4/ax_boost_locale.m4
++++ b/m4/ax_boost_locale.m4
+@@ -98,12 +98,11 @@ AC_DEFUN([AX_BOOST_LOCALE],
+                 fi
+ 
+             else
+-               for ax_lib in $ax_boost_user_locale_lib boost_locale-$ax_boost_user_locale_lib; do
+-				      AC_CHECK_LIB($ax_lib, exit,
+-                                   [BOOST_LOCALE_LIB="-l$ax_lib"; AC_SUBST(BOOST_LOCALE_LIB) link_locale="yes"; break],
+-                                   [link_locale="no"])
+-                  done
+-
++               # ld does not like our LDFLAGS so just trust we set library correctly...
++               ax_lib=${ax_boost_user_locale_lib}
++               BOOST_LOCALE_LIB="-l$ax_lib"
++               AC_SUBST(BOOST_LOCALE_LIB)
++               link_locale="yes"
+             fi
+             if test "x$ax_lib" = "x"; then
+                 AC_MSG_ERROR(Could not find a version of the library!)
+diff --git a/m4/ax_boost_system.m4 b/m4/ax_boost_system.m4
+index 139d066..889b05d 100644
+--- a/m4/ax_boost_system.m4
++++ b/m4/ax_boost_system.m4
+@@ -100,12 +100,11 @@ AC_DEFUN([AX_BOOST_SYSTEM],
+                 fi
+ 
+             else
+-               for ax_lib in $ax_boost_user_system_lib boost_system-$ax_boost_user_system_lib; do
+-				      AC_CHECK_LIB($ax_lib, exit,
+-                                   [BOOST_SYSTEM_LIB="-l$ax_lib"; AC_SUBST(BOOST_SYSTEM_LIB) link_system="yes"; break],
+-                                   [link_system="no"])
+-                  done
+-
++               # ld does not like our LDFLAGS so just trust we set library correctly...
++               ax_lib=${ax_boost_user_system_lib}
++               BOOST_SYSTEM_LIB="-l$ax_lib"
++               AC_SUBST(BOOST_SYSTEM_LIB)
++               link_system="yes"
+             fi
+             if test "x$ax_lib" = "x"; then
+                 AC_MSG_ERROR(Could not find a version of the boost system library!)
+-- 
+2.21.0
+

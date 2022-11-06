@@ -1,0 +1,37 @@
+# Recipe created by recipetool
+# recipetool create -o solvespace_3.0.bb https://github.com/solvespace/solvespace/archive/refs/tags/v3.0.tar.gz
+
+LICENSE = "GPLv3"
+LIC_FILES_CHKSUM = "file://COPYING.txt;md5=8006d9c814277c1bfc4ca22af94b59ee"
+
+#SRC_URI = "https://github.com/solvespace/solvespace/archive/refs/tags/v${PV}.tar.gz"
+#SRC_URI[md5sum] = "8cce2cff954cdc03e289298859dbf83f"
+#SRC_URI[sha1sum] = "0d1737c375373438f7c920bfe6689e9224012b8e"
+#SRC_URI[sha256sum] = "04cda618fbbbe2db92713adf2fff4264017f858bac6f737c9da11efab693be4f"
+#SRC_URI[sha384sum] = "1cb4002d1d0a236e1b3eeade3b950bf294138d24e0b16dc824a5f6dedf6e8b1bbbe1f778a3360503d40467203f00e878"
+#SRC_URI[sha512sum] = "b07b41fac1d67c5350082600a2f09e3fa611a1273e0c93ff93d11a7a1dbf550ff33465686eaff04fdb8350d1fe854ab0301d8723ef31cc65c687ba59cb89187f"
+
+SRC_URI = "git://github.com/solvespace/solvespace.git;protocol=https;branch=master \
+           gitsm://github.com/solvespace/libdxfrw.git;protocol=https;branch=master \
+           gitsm:"
+SRCREV_solvespace = "0e0b0252e23dd5bd4ae82ababcc54c44aee036d6"
+SRCREV_libdxfrw = "0b7b7b709d9299565db603f878214656ef5e9ddf"
+
+S = "${WORKDIR}/solvespace"
+S_libdxfrw = "${WORKDIR}/solvespace/extlib/libdxfrw"
+
+DEPENDS = "cairo json-c zlib fontconfig libpng virtual/libgl freetype gtkmm3 atkmm \
+           cairomm glibmm pangomm libglu mesa"
+
+inherit cmake pkgconfig gettext
+
+# Specify any options you want to pass to cmake using EXTRA_OECMAKE:
+EXTRA_OECMAKE = "-DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON -DCMAKE_INSTALL_PREFIX=/usr"
+
+#do_configure_prepend() {
+# git submodule update --init extlib/libdxfrw extlib/mimalloc
+#}
+
+HOMEPAGE = "https://github.com/solvespace/solvespace"
+SUMMARY = "Parametric 2d/3d CAD"
+

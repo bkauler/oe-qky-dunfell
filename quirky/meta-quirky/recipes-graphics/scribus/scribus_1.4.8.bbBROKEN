@@ -1,0 +1,33 @@
+# Recipe created by recipetool
+# recipetool create -o scribus_1.4.8.bb https://downloads.sourceforge.net/project/scribus/scribus/1.4.8/scribus-1.4.8.tar.gz
+SECTION = "x11/apps"
+
+LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://COPYING;md5=c51a7f4ab79aa2c02c4ecfd93420c5db"
+
+SRC_URI = "https://downloads.sourceforge.net/project/scribus/scribus/${PV}/scribus-${PV}.tar.gz"
+SRC_URI[md5sum] = "6246cadc3d0a6dfc0119926eb7e7dcda"
+SRC_URI[sha256sum] = "fe6e3ec0e11d17b987001bb393907594d872ddba969ae7b8c36983eedd15c87b"
+
+DEPENDS = "libxml2 zlib cairo jpeg cups tiff boost libpng freetype fontconfig \
+           ghostscript lcms lcms-native hunspell hyphen \
+           qt4-native qt4-x11-free \
+           boost-native ghostscript-native"
+
+#can i leave out python?  python3-dir
+inherit cmake qt4x11
+
+#B = "${S}"
+
+#EXTRA_OECMAKE = "-DCMAKE_INSTALL_PREFIX=/usr"
+
+XXXdo_configure_prepend() {
+ mv -f ${S}/configure ${S}/configureHIDE
+}
+
+XXXdo_configure() {
+ cmake ../scribus-${PV} ${OECMAKE}
+}
+
+SUMMARY = "Desktop publishing"
+HOMEPAGE = "https://www.scribus.net/"

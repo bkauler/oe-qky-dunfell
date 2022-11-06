@@ -1,0 +1,20 @@
+# Recipe created by recipetool
+# recipetool create -o homebank_5.2.3.bb http://homebank.free.fr/public/homebank-5.2.3.tar.gz
+
+LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://COPYING;md5=b234ee4d69f5fce4486a80fdaf4a4263"
+
+SRC_URI = "http://homebank.free.fr/public/homebank-${PV}.tar.gz"
+SRC_URI[md5sum] = "c2227f03e62518e020f795822f070854"
+SRC_URI[sha256sum] = "6a64cc9a54e2b2dce9750797598995b54f430ea438455b474d2c83c69f41aff1"
+
+DEPENDS = "intltool-native glib-2.0 gtk+3 libofx libsoup-2.4 glib-2.0-native"
+
+inherit pkgconfig gettext autotools
+
+EXTRA_OECONF = "--with-ofx"
+
+FILES_${PN} += "${datadir}/mime ${datadir}/application-registry ${datadir}/icons ${datadir}/mime-info ${datadir}/appdata"
+
+HOMEPAGE = "http://homebank.free.fr/"
+SUMMARY = "Personal finance management"

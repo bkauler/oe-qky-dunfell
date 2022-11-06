@@ -1,0 +1,23 @@
+# Recipe created by recipetool
+# recipetool create -o libvdpau-va-gl_0.4.2.bb https://github.com/i-rinat/libvdpau-va-gl/releases/download/v0.4.2/libvdpau-va-gl-0.4.2.tar.gz
+
+LICENSE = "MIT"
+LIC_FILES_CHKSUM = "file://LICENSE;md5=5a9126e7f56a0cf3247050de7f10d0f4"
+
+SRC_URI = "https://github.com/i-rinat/libvdpau-va-gl/releases/download/v${PV}/libvdpau-va-gl-${PV}.tar.gz"
+SRC_URI[md5sum] = "8db21dcfd5cd14c6ec51b992e20369dc"
+SRC_URI[sha256sum] = "7d9121540658eb0244859e63da171ca3869e784afbeaf202f44471275c784af4"
+
+DEPENDS = "libx11 ffmpeg libvdpau libva mesa xserver-xorg"
+
+inherit cmake pkgconfig
+
+# Specify any options you want to pass to cmake using EXTRA_OECMAKE:
+EXTRA_OECMAKE = "-DCMAKE_BUILD_TYPE=Release"
+
+FILES_${PN} += "${libdir}/vdpau"
+
+INSANE_SKIP_${PN} += "dev-so"
+
+HOMEPAGE = "https://github.com/i-rinat/libvdpau-va-gl"
+SUMMARY = "VDPAU driver with OpenGL/VAAPI backend"

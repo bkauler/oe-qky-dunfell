@@ -1,0 +1,4 @@
+
+20220317
+pkg gitg wants glib-20 >= 2.68, have 2.26.2
+got glib-2.0 2.70.4 from master-next (input600)

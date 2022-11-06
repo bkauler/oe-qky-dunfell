@@ -1,0 +1,44 @@
+diff -Naur xorg-server-21.1.3ORIG/hw/kdrive/ephyr/ephyrinit.c xorg-server-21.1.3/hw/kdrive/ephyr/ephyrinit.c
+--- xorg-server-21.1.3ORIG/hw/kdrive/ephyr/ephyrinit.c	2022-01-03 06:41:56.000000000 +0800
++++ xorg-server-21.1.3/hw/kdrive/ephyr/ephyrinit.c	2022-03-16 08:05:18.876627107 +0800
+@@ -70,25 +70,23 @@
+     KdKeyboardInfo *ki;
+     KdPointerInfo *pi;
+ 
+-    if (!SeatId) {
+-        KdAddKeyboardDriver(&EphyrKeyboardDriver);
+-        KdAddPointerDriver(&EphyrMouseDriver);
++    KdAddKeyboardDriver(&EphyrKeyboardDriver);
++    KdAddPointerDriver(&EphyrMouseDriver);
+ 
+-        if (!kdHasKbd) {
+-            ki = KdNewKeyboard();
+-            if (!ki)
+-                FatalError("Couldn't create Xephyr keyboard\n");
+-            ki->driver = &EphyrKeyboardDriver;
+-            KdAddKeyboard(ki);
+-        }
++    if (!kdHasKbd) {
++        ki = KdNewKeyboard();
++        if (!ki)
++            FatalError("Couldn't create Xephyr keyboard\n");
++        ki->driver = &EphyrKeyboardDriver;
++        KdAddKeyboard(ki);
++    }
+ 
+-        if (!kdHasPointer) {
+-            pi = KdNewPointer();
+-            if (!pi)
+-                FatalError("Couldn't create Xephyr pointer\n");
+-            pi->driver = &EphyrMouseDriver;
+-            KdAddPointer(pi);
+-        }
++    if (!kdHasPointer) {
++        pi = KdNewPointer();
++        if (!pi)
++            FatalError("Couldn't create Xephyr pointer\n");
++        pi->driver = &EphyrMouseDriver;
++        KdAddPointer(pi);
+     }
+ 
+     KdInitInput();

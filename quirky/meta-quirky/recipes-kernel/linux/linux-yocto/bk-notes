@@ -1,0 +1,5 @@
+
+DOTconfig* is from here:
+build-amd64/tmp/work/genericx86_64-poky-linux/linux-yocto/5.4.49+gitAUTOINC+7ed307f651_ec485bd4af-r0/linux-genericx86_64-standard-build/.config
+
+hmmm, it is very different from my 'defconfig'.

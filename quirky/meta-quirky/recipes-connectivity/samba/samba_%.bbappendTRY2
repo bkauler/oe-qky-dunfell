@@ -1,0 +1,76 @@
+# BK 20210122
+
+# 202101023 recompiling, bump revision...
+# 20210121 PR_NUM is defined in local.conf...
+PR = "r${@int(PR_NUM) + 1}"
+
+#heimdahl compiles these and want to run them during compile... do not use $HOST_ARCH...
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+SRC_URI_append = "\
+  file://${BUILD_ARCH}/asn1_compile \
+  file://${BUILD_ARCH}/compile_et"
+
+DEPENDS = "readline virtual/libiconv zlib popt libtalloc libtdb libtevent libldb libaio libtasn1 jansson libbsd gpgme acl gnutls libarchive openldap"
+
+REQUIRED_DISTRO_FEATURES = ""
+
+SYSTEMD_PACKAGES = ""
+SYSTEMD_SERVICE_${PN}-base = ""
+SYSTEMD_SERVICE_${PN}-ad-dc = ""
+SYSTEMD_SERVICE_winbind = ""
+SYSTEMD_AUTO_ENABLE_${PN}-ad-dc = ""
+
+PACKAGECONFIG = ""
+
+# removed: --bundled-libraries=!asn1_compile,!compile_et
+EXTRA_OECONF = "--enable-fhs \
+                 --with-piddir=/run \
+                 --with-sockets-dir=/run/samba \
+                 --with-modulesdir=${libdir}/samba \
+                 --with-lockdir=${localstatedir}/lib/samba \
+                 --with-cachedir=${localstatedir}/lib/samba \
+                 --disable-rpath-install \
+                 ${@oe.utils.conditional('TARGET_ARCH', 'x86_64', '', '--disable-glusterfs', d)} \
+                 --with-cluster-support \
+                 --with-profiling-data \
+                 --with-libiconv=${STAGING_DIR_HOST}${prefix} \
+                 --without-pam --without-sendfile-support \
+                 --without-ad-dc  --without-ntvfs-fileserver  --nopyc --nopyo \
+                 --without-fam --without-lttng --without-systemd --disable-avahi \
+                 --enable-cups --with-acl-support --with-automount --with-quotas \
+                 --with-syslog --with-ldap --enable-gnutls --with-gpgme --with-libbsd \
+                 --with-libarchive --without-valgrind \
+                 --bundled-libraries=!asn1_compile,!compile_et"
+
+RDEPENDS_${PN}-ad-dc = ""
+
+# ref: http://samba.2283325.n4.nabble.com/Samba4-4-5-cross-compilation-for-PowerPC-td4710972.html
+export USING_SYSTEM_ASN1_COMPILE = "1"
+export ASN1_COMPILE = "${WORKDIR}/${BUILD_ARCH}/asn1_compile"
+export USING_SYSTEM_COMPILE_ET = "1"
+export COMPILE_ET = "${WORKDIR}/${BUILD_ARCH}/compile_et"
+
+ERROR_QA_remove = "file-rdeps"
+WARN_QA_remove = "file-rdeps"
+
+#20210123 tried to build smbnetfs, got this error:
+#ERROR: smbnetfs-0.6.1+gitAUTOINC+a117eec8de-r1 do_prepare_recipe_sysroot: The file /usr/lib/python3.8/site-packages/_ldb_text.py is installed by both libldb and samba, aborting
+#ERROR: Logfile of failure stored in: /mnt/sda1/nvme/oe-builds/oe-quirky/build-aarch64/tmp/work/aarch64-poky-linux/smbnetfs/0.6.1+gitAUTOINC+a117eec8de-r1/temp/log.do_prepare_recipe_sysroot.17983
+#ERROR: Task (/mnt/sda1/nvme/oe-builds/oe-quirky/meta-filesystems/recipes-filesystems/smbnetfs/smbnetfs_git.bb:do_prepare_recipe_sysroot) failed with exit code '1'
+#see if this fixes it, remove files already installed by libldb:
+#note, this will be appended to do_install_append() in main recipe...
+do_install_append() {
+ CLASHFILE="$(find ${D}/usr/lib/python*/site-packages -mindepth 1 -maxdepth 1 -type f -name '_ldb_text.py')"
+ if [ "${CLASHFILE}" ];then
+  if [ -f "${CLASHFILE}" ];then
+   rm -f ${CLASHFILE}
+  fi
+ fi
+ CLASHFILE="$(find ${D}/usr/lib/python*/site-packages -mindepth 1 -maxdepth 1 -type f -name 'ldb.cpython-*.so')"
+ if [ "${CLASHFILE}" ];then
+  if [ -f "${CLASHFILE}" ];then
+   rm -f ${CLASHFILE}
+  fi
+ fi 
+}
+

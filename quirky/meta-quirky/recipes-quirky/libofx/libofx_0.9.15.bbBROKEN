@@ -1,0 +1,29 @@
+# Recipe created by recipetool
+# recipetool create -o libofx_0.9.15.bb http://deb.debian.org/debian/pool/main/libo/libofx/libofx_0.9.15.orig.tar.gz
+
+LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://COPYING;md5=4641e94ec96f98fabc56ff9cc48be14b"
+
+SRC_URI = "http://deb.debian.org/debian/pool/main/libo/libofx/libofx_${PV}.orig.tar.gz"
+SRC_URI[md5sum] = "ee4567bf8ceb1db81f81d38ff446d833"
+SRC_URI[sha1sum] = "7fb61f1375e15c8e58bc4515351b4e6523c12f8d"
+SRC_URI[sha256sum] = "74a9370da560526424ab62d79f7301f86620a8566c3f38cfc4684e63a4aac155"
+SRC_URI[sha384sum] = "aad3d949b5d82866c9e7cc7db67292fd44202b1a0a66242287542bbe8b426d9be9ac27044ba5af44de629934b760646a"
+SRC_URI[sha512sum] = "6014bf9c457adbe9053a47718064e6246c911c3bf081c690bf761650220208aabe94824aaa38794c1834462894b7948a06b3ff6b517a9a84b9f881ba51aee3a1"
+
+# NOTE: the following prog dependencies are unknown, ignoring: dot doxygen
+# NOTE: the following library dependencies are unknown, ignoring: gnugetopt
+#       (this is based on recipes that have previously been built and packaged)
+DEPENDS = "opensp curl libxml2"
+
+# NOTE: if this software is not capable of being built in a separate build directory
+# from the source, you should replace autotools with autotools-brokensep in the
+# inherit line
+inherit autotools pkgconfig
+
+SROOT = "${WORKDIR}/recipe-sysroot"
+
+EXTRA_OECONF = "--disable-gengetopt --disable-html-docs --disable-doxygen --with-opensp-includes=${SROOT}/usr/include/OpenSP --with-opensp-libs=${SROOT}/usr/lib"
+
+HOMEPAGE = "http://libofx.sourceforge.net/"
+SUMMARY = "OFX banking protocol abstraction library"

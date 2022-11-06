@@ -1,0 +1,10 @@
+
+# 20211105 recompiling, bump revision...
+# PR_NUM is defined in local.conf...
+PR = "r${@int(PR_NUM) + 1}"
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+# ref: https://716574.bugs.gentoo.org/attachment.cgi?id=632372
+# ref: https://bugzilla.mozilla.org/show_bug.cgi?id=1623885
+SRC_URI_append = " file://fix-realpath-vs-firefox.patch"

@@ -1,0 +1,48 @@
+# Recipe created by recipetool
+# recipetool create -o lives_3.2.0.bb http://lives-video.com/releases/LiVES-3.2.0.tar.gz
+
+# WARNING: the following LICENSE and LIC_FILES_CHKSUM values are best guesses - it is
+# your responsibility to verify that the values are complete and correct.
+#
+# NOTE: multiple licenses have been detected; they have been separated with &
+# in the LICENSE value for now since it is a reasonable assumption that all
+# of the licenses apply. If instead there is a choice between the multiple
+# licenses then you should change the value to separate the licenses with |
+# instead of &. If there is any doubt, check the accompanying documentation
+# to determine which situation is applicable.
+LICENSE = "GPLv3 & LGPLv3"
+LIC_FILES_CHKSUM = "file://COPYING;md5=f27defe1e96c2e1ecd4e0c9be8967949 \
+                    file://COPYING.LGPL;md5=59cf55ceb3219acc195418308b48f82e \
+                    file://lives-plugins/plugins/encoders/COPYING;md5=f27defe1e96c2e1ecd4e0c9be8967949 \
+                    file://lives-plugins/plugins/playback/video/COPYING;md5=f27defe1e96c2e1ecd4e0c9be8967949 \
+                    file://lives-plugins/weed-plugins/COPYING;md5=f27defe1e96c2e1ecd4e0c9be8967949"
+
+SRC_URI = "http://lives-video.com/releases/LiVES-${PV}.tar.gz \
+           file://cross-compile-fix.patch"
+SRC_URI[md5sum] = "851d3af41b3d3a78ec7e5dbd07d8d1f5"
+SRC_URI[sha1sum] = "bda0ed2a0fa1ea4083f4f12f9cff161092e556bc"
+SRC_URI[sha256sum] = "b3ed086d6548d51389e84223e7127818dcc79b2155ed9d73292a0aa3a13b88b5"
+SRC_URI[sha384sum] = "e1c87caf996332ecf41854954a2ac7c5818faeb6b9691e2c7528762a93bc3b50daf541ac2378310f1e1fdb90564cf156"
+SRC_URI[sha512sum] = "036bb47865cc6ec271687786f73c20ee97d94996bc281b8341e7abc433a2fb37757dff65f8a4332185385b636f78115ff45aba44094e86a238946ed9b1b0f4e2"
+
+DEPENDS = "glib-2.0 glib-2.0-native libpng libsdl libogg zlib libtheora libtirpc \
+           schroedinger alsa-lib libsdl2 jack gtk+ gtk+3 orc pulseaudio ffmpeg \
+           libxrender libx11 mesa ghostscript cups cups-filters jpeg \
+           libebml libmatroska libsdl-image libsdl-mixer libsdl-ttf mpv \
+           mjpegtools libdv libsdl-gfx bzip2 zlib libxrender"
+
+inherit perlnative gettext pkgconfig autotools-brokensep
+
+#force gtk2... OSC causes compile fail...
+EXTRA_OECONF = "--disable-gtk3 --disable-OSC"
+
+HOMEPAGE = "http://lives-video.com/"
+SUMMARY = "Video editing"
+
+#make[1]: *** No rule to make target 'libgnuintl.@INTL_LIBTOOL_SUFFIX_PREFIX@a', needed by 'all-no-yes'.  Stop.
+#make[1]: Leaving directory '/mnt/sda1/nvme/oe-builds/oe-quirky/build-amd64/tmp/work/nocona-64-poky-linux/lives/3.2.0-r6/lives-3.2.0/intl'
+#do not know how to fix this, so this hack...
+do_configure_prepend() {
+ sed -i -e 's%OSC_SUBDIRS) intl %OSC_SUBDIRS) %' ${S}/Makefile.am
+}
+

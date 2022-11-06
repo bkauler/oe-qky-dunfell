@@ -1,0 +1,56 @@
+
+MACHINE ??= "genericx86-64"
+DISTRO ?= "poky"
+PACKAGE_CLASSES ?= "package_deb"
+EXTRA_IMAGE_FEATURES ?= "debug-tweaks dev-pkgs tools-sdk"
+USER_CLASSES ?= "buildstats image-mklibs image-prelink"
+PATCHRESOLVE = "noop"
+BB_DISKMON_DIRS ??= "\
+    STOPTASKS,${TMPDIR},1G,100K \
+    STOPTASKS,${DL_DIR},1G,100K \
+    STOPTASKS,${SSTATE_DIR},1G,100K \
+    STOPTASKS,/tmp,100M,100K \
+    ABORT,${TMPDIR},100M,1K \
+    ABORT,${DL_DIR},100M,1K \
+    ABORT,${SSTATE_DIR},100M,1K \
+    ABORT,/tmp,10M,1K"
+CONF_VERSION = "1"
+
+# for vlc: dep 'mpeg2dec' requires commercial license.
+LICENSE_FLAGS_WHITELIST += "commercial"
+
+IMAGE_FSTYPES += "tar.bz2"
+
+# in yocto, got an error when building initramfs, default maxsize is too small.
+# INITRAMFS_MAXSIZE is set in meta/conf/bitbake.conf (= 131072 kb, 128MB).
+# override here, 160MB:
+INITRAMFS_MAXSIZE = "163840"
+
+# this is supposed to remove 'avahi' pkg...
+DISTRO_FEATURES_remove = "zeroconf"
+
+DISTRO_FEATURES_remove = "wayland"
+
+# meta/conf/bitbake.conf has this line:
+# DISTRO_FEATURES_BACKFILL = "pulseaudio sysvinit bluez5 gobject-introspection-data"
+# ...this could be edited, or insert this into build*/conf/local.conf to remove:
+# DISTRO_FEATURES_BACKFILL_CONSIDERED = "pulseaudio"
+
+DISTRO_FEATURES_remove = "systemd"
+DISTRO_FEATURES_BACKFILL_CONSIDERED = "systemd"
+
+#current have:
+# DISTRO_FEATURES_DEFAULT="acl alsa argp bluetooth ext2 ipv4 ipv6 largefile pcmcia usbgadget usbhost wifi xattr nfs zeroconf pci 3g nfc x11 vfat"
+DISTRO_FEATURES_append = " opengl ldconfig"
+
+# host running as root, causes heaps of these warnings...
+WARN_QA_remove = "host-user-contaminated"
+
+#get the ball rolling, pkgs (many of these will be selected anyway)...
+#IMAGE_INSTALL_append = " acl acpid adwaita-icon-theme alsa-lib alsa-state alsa-utils android-tools android-tools-conf apr apr-util apt archive-zip atk atkmm at-spi2-atk at-spi2-core attr aufs-util autoconf automake babl base-files base-passwd bash bash-completion bc bdftopcf bdwgc binutils bison bluez5 boost busybox bzip2 ca-certificates cairo cairomm ccache cdrkit cifs-utils cmake coreutils cpio cppunit cryptodev-linux cups curl db dbus dbus-glib dcadec debianutils desktop-file-utils dhcpcd dialog diffstat diffutils dmidecode dnsmasq docbook-xml-dtd4 docbook-xsl-stylesheets dosfstools dpkg dtc e2fsprogs ed elfutils enca encodings ethtool eudev evince exfat-utils expat f2fs-tools faac faad2 ffmpeg file findutils flac flex fltk fontconfig font-util formfactor freetype fribidi fuse gawk gconf gdb gdbm gdk-pixbuf geany gegl gettext ghostscript giflib gimp git glew glib-2.0 glibc glibmm glib-networking glm gmp gnome-menus gnome-themes-standard gnu-config gnupg gnutls gobject-introspection gparted gperf gpgme gphoto2 gptfdisk graphite2 grep groff grub grub-efi gsettings-desktop-schemas gsl gtk+ gtk+3 gtkmm gtksourceview2 gzip harfbuzz hdparm hexedit hiawatha hicolor-icon-theme hostapd hplip hunspell hyphen iceauth icu init-ifupdown initramfs-live-boot initramfs-live-install initramfs-live-install-efi initscripts inotify-tools intltool iproute2 iptables iw jansson jasper json-glib kbd keymaps kmod lame lcms less liba52 libacpi libaio libao libarchive libart-lgpl libass libassuan libatomic-ops libavc1394 libbsd libcap libcap-ng libcdio libcdio-paranoia libcgi-perl libcheck libcmis libcroco libdaemon libdbd-mysql-perl libdbi-perl libdc1394 libdigest-sha1-perl libdmx libdrm libdvdnav libdvdread libebml libepoxy liberation-fonts libevdev libevent libexif libexttextcat libffi libfontenc libgcrypt libgee libglu libglade libgnomecanvas libgpg-error libgphoto2 libgsf libgudev libhtml-parser-perl libical libice libid3tag libidn libjpeg-turbo libksba liblangtag libmad libmbim libmicrohttpd libmikmod libmms libmng libmodplug libmpc libndp libnewt libnl libogg liboil libpcap libpciaccess libpcre libplist libpng libproxy libqmi libraw1394 librsvg libsamplerate0 libsdl libsdl2 libsdl2-image libsdl2-mixer libsdl2-ttf libsdl-image libsdl-mixer libsdl-ttf libsigc++-2.0 libsm libsndfile1 libsoup-2.4 libssh libtalloc libtasn1 libtheora libtinyxml libtirpc libtool libtorrent libunistring liburcu liburi-perl libusb1 libusb-compat libva libvdpau libvorbis libvpx libwebp libx11 libxau libxaw libxcb libxcomposite libxcursor libxdamage libxdmcp libxext libxfixes libxfont libxfont2 libxft libxi libxinerama libxkbcommon libxkbfile libxml2 libxml-parser-perl libxml-simple-perl libxmu libxpm libxrandr libxrender libxscrnsaver libxshmfence libxslt libxt libxtst libxv libxvmc libxxf86dga libxxf86misc libxxf86vm linux-firmware linux-libc-headers lockdev lrzsz lttng-ust lz4 lzo m4 make makedepend man mariadb memtester mesa mesa-demos meson mingetty minicom mkfontdir mkfontscale mm-common mobile-broadband-provider-info modemmanager modutils-initscripts mpeg2dec mpfr mpg123 mpv mtdev mtools mtr mythes nasm ncurses neard neon netbase nettle networkmanager ninja npth nspr nss ntfs-3g-ntfsprogs ntp numlockx ofono openbox opencore-amr openjpeg openldap openssh openssl opkg-utils orc packagegroup-base packagegroup-core-boot packagegroup-core-buildessential packagegroup-core-sdk packagegroup-core-ssh-openssh packagegroup-core-standalone-sdk-target packagegroup-core-tools-debug packagegroup-core-x11 packagegroup-core-x11-xserver pango pangomm parted patch pciutils perl pidgin pinentry pixman pkgconfig pm-utils poppler poppler-data popt ppp ppp-dialin pptp-linux prelink procps pseudo psmisc pure-ftpd python python3 python3-dbus python3-lxml python3-pip python3-pycairo python3-pygobject python3-setuptools qemu qtbase qtdeclarative qtimageformats qtmultimedia qtsvg qttools qtx11extras qtxmlpatterns quilt quota raptor2 rasqal re2c readline redland rgb rng-tools rpcbind rpm rp-pppoe rsync rtorrent run-postinsts rxvt-unicode schroedinger sed serf setserial setxkbmap shadow shadow-securetty shadow-sysroot shared-mime-info slang socat speex speexdsp sqlite3 squashfs-tools sshfs-fuse startup-notification strace streamripper subversion sudo swig sysfsutils syslinux sysvinit sysvinit-inittab taglib tar tcl tcp-wrappers texinfo tiff tzdata udev-extraconf unzip update-rc.d usb-modeswitch usb-modeswitch-data usbutils util-linux util-macros v4l-utils vala vigra vim vte wavpack wget wpa-supplicant wvdial wvstreams x264 xauth xbitmaps xcb-proto xcb-util xcb-util-image xcb-util-keysyms xcb-util-renderutil xcb-util-wm xcursorgen xdelta3 xdg-utils xdotool xdpyinfo xev xf86-input-evdev xf86-input-keyboard xf86-input-mouse xf86-input-synaptics xf86-video-ati xf86-video-cirrus xf86-video-fbdev xf86-video-intel xf86-video-mga xf86-video-nouveau xf86-video-vesa xfontsel xgamma xhost xinit xinput xinput-calibrator xkbcomp xkeyboard-config xmessage xmlto xmodmap xorriso xprop xrandr xrdb xserver-nodm-init xserver-xf86-config xserver-xorg xset xsetmode xsetroot xterm xwd xwininfo xz yajl yasm zip zlib"
+IMAGE_INSTALL_append = " packagegroup-core-x11 packagegroup-core-x11-xserver"
+
+IMAGE_INSTALL_append = " ghostscript cups ffmpeg"
+
+IMAGE_INSTALL_append = " epiphany"
+

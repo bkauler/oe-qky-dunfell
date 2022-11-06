@@ -1,0 +1,11 @@
+
+See the 'docs' folder for more notes.
+
+20210827
+--------
+build-amd64-musl and build-aarch64-musl are for compiling some statically
+-linked utilities. They are not full distribution builds.
+
+20220819
+--------
+for i686 build, see meta-yocto-bsp/conf/machine/include/genericx8-common.incNO-EFI

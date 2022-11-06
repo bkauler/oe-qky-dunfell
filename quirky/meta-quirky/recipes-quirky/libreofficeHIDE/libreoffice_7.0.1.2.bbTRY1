@@ -1,0 +1,100 @@
+# Recipe created by recipetool
+# recipetool create -o libreoffice_7.0.1.2.bb http://download.documentfoundation.org/libreoffice/src/7.0.1/libreoffice-7.0.1.2.tar.xz
+
+# ref: https://github.com/schnitzeltony/meta-office
+# ...got some ideas from schnitzeltony
+
+LICENSE = "GPLv3 & LGPLv2.1"
+LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504 \
+                    file://COPYING.LGPL;md5=6a6a8e020838b23406c81b19c1d46df6"
+
+#don't need this, as already have libreoffice-translations in 'tarballs-libreoffice' folder
+#           http://download.documentfoundation.org/libreoffice/src/7.0.1/libreoffice-translations-${PV}.tar.xz;apply=no;name=lotranslations;apply=no 
+#error: compile fail, leaving it out.
+
+SRC_URI = "http://download.documentfoundation.org/libreoffice/src/7.0.1/libreoffice-${PV}.tar.xz;name=libreoffice \
+           file://0001-Workaround-boost-library-detection-failures.patch"
+
+SRC_URI[libreoffice.md5sum] = "c44ed1c4be60fc5455256e29503a78e6"
+SRC_URI[libreoffice.sha256sum] = "6363ee2a7cd1389620bd1933c41be8fa59a8f36ff46c51d3f91e5b31631c7832"
+#SRC_URI[lotranslations.md5sum] = "fd1d69b26c568e55d54979a548608902"
+#SRC_URI[lotranslations.sha256sum] = "e6f75aa0ef0924b5312f06601397b7abe0a326036d103dc96444eb0a071fd631"
+
+# NOTE: the following prog dependencies are unknown, ignoring: i386-mingw32msvc-g++ ucpp bash i586-pc-mingw32-g++ i686-pc-mingw32-g++ xmllint ccache gpg epm openssl touch patch unzip ant.sh mariadb_config dpkg gnucp gpgconf odfvalidator gawk doxygen msguniq genbrk yasm moc-qt5 ant gperf sha1sum sha1 officeotron mysql_config qmake-qt5 i686-w64-mingw32-g++ nasmw pg_config uuidgen ant.bat zip ant.cmd grep nasm shasum curl-config pkgmk llvm-config moc fontforge fb_config fakeroot xsltproc clang genccode msgfmt wine gencmn qmake javadoc clang++
+# NOTE: unable to map the following pkg-config dependencies: libpq bzip2 dconf liblangtag coinmp fbclient coinutils avahi-client libclucene-core mythes
+#       (this is based on recipes that have previously been built and packaged)
+# NOTE: the following library dependencies are unknown, ignoring: lpsolve55 mythes-1.2 hyph rdf tommath qrcodegencpp pq ldap hunspell hnj hyphen mythes
+#       (this is based on recipes that have previously been built and packaged)
+
+DEPENDS = "virtual/libgl libxrandr glib-2.0 libjpeg-turbo virtual/egl icu curl \
+  cairo cups libice libx11 freetype gtk+3 hunspell bison-native poppler gnutls \
+  libsm boost dbus libxinerama fontconfig libxcb libxml2 libxslt gpgme flex-native \
+  libxrender xcb-util-wm zlib \
+  openssl unzip zip yasm yasm-native nasm nasm-native bzip2 bzip2-native zlib-native \
+  xz xz-native pango ghostscript curl curl-native db dpkg dpkg-native icu ijs \
+  lcms libaio libarchive libart-lgpl libass libassuan libatomic-ops libavc1394 \
+  libbluray libbsd libcanberra libcap libcddb libcdio libcdio-paranoia libcec \
+  libcroco libdaemon libdc1394 libdmx libdvdcss libdvdnav libdvdread libepoxy \
+  libevdev libevent libexif libexif-gtk libgcrypt libgd giflib libgpg-error \
+  libgphoto2 libgsf libgudev libical libid3tag libidn libidn2 libjpeg-turbo \
+  gnupg libksba libmaa libmad libmikmod libmng libmnl libmodplug libmpc libmypaint \
+  libndp libnl libnotify libnsl2 libofx libogg libpcap libpciaccess libpipeline \
+  libpcre libpng libproxy libpsl libpthread-stubs libraw1394 librsvg libsamplerate0 \
+  libseccomp libsecret libsigc++-2.0 libsndfile1 libsoup-2.4 libssh2 libtalloc \
+  libtasn1 libtevent libtheora libtirpc libtommath libtool libunistring liburcu \
+  libusb1 libva libvdpau libvorbis libvpx libwebp libxcrypt libxfont libxkbcommon \
+  libxklavier libxshmfence libxv glib-2.0-native gperf-native unzip-native \
+  zip-native ffmpeg glm openldap sane-backends neon \
+  mariadb mariadb-native"
+
+inherit perlnative pkgconfig autotools-brokensep
+
+# leave these out: 
+# --build=aarch64-unknown-linux-gnu --prefix=/usr --exec_prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/libexec --datadir=/usr/share --sysconfdir=/etc --sharedstatedir=/com --localstatedir=/var --libdir=/usr/lib --includedir=/usr/include --oldincludedir=/usr/include --infodir=/usr/share/info --mandir=/usr/share/man
+
+#compile fail with the translations tarball, leave out for now...
+#  --with-locales="en fr de nn nb"
+
+EXTRA_OECONF = "--without-fonts --without-krb5 --without-doxygen \
+  --enable-release-build --with-parallelism=4 --without-java --disable-coinmp \
+  --with-tls=nss --without-galleries --disable-gstreamer-1-0 --disable-avahi \
+  --disable-odk --disable-postgresql-sdbc --with-system-libs \
+  --without-system-clucene --without-system-xmlsec --without-system-libepubgen \
+  --without-system-libqxp --without-system-libzmf --without-system-libstaroffice \
+  --without-system-cppunit --without-system-mdds --without-system-odbc \
+  --without-system-orcus --without-system-lpsolve --without-system-libodfgen \
+  --without-system-libwps --without-system-libcdr --without-system-libmwaw \
+  --without-system-libetonyek --without-system-libfreehand --without-system-libebook \
+  --without-system-libabw --without-system-libnumbertext --without-system-libcmis \
+  --without-system-librevenge --without-system-libwpd --without-system-libwpg \
+  --without-system-libvisio --without-system-libmspub --without-system-libpagemaker \
+  --without-system-mariadb --without-system-firebird --without-system-redland \
+  --without-system-qrcodegen --without-system-altlinuxhyph --without-system-mythes \
+  --without-system-libexttextcat --without-system-liblangtag \
+  --with-lang="en-GB fr de nn nb" --with-locales="en" \
+  --with-theme=colibre --disable-scripting-javascript --disable-scripting-beanshell \
+  --disable-lotuswordpro --disable-ccache --enable-cups --disable-vlc --disable-qt5  \
+  --disable-sdremote --disable-dbus --enable-python=no --disable-debug \
+  --disable-evolution2 --enable-pdfimport --disable-lpsolve --disable-report-builder \
+  --enable-firebird-sdbc --with-system-neon --with-boost-date-time=boost_date_time \
+  --with-boost-filesystem=boost_filesystem --with-boost-locale=boost_locale\
+  --with-boost-iostreams=boost_iostreams --with-boost-system=boost_system"
+
+#do not reconstruct configure...
+do_configure() {
+ oe_runconf
+}
+
+do_compile_prepend() {
+ ##have saved all the tarballs that libreoffice downloads...
+ #mkdir -p ${S}/external/tarballs
+ ##$TMPDIR is in the 'tmp' folder...
+ #cp -a -u ${TMPDIR}/../../../tarballs-libreoffice/* ${S}/external/tarballs/
+ #disable this check...
+ sed -i -e 's%^check-if-root:%check-if-root:\n\ncheck-if-rootXXX:%' ${S}/Makefile
+}
+
+
+HOMEPAGE = "https://libreoffice.org"
+SUMMARY = "Office suite"
+

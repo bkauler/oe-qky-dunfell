@@ -1,0 +1,15 @@
+# BK 20201227 bash compiled in OE has a serious bug:
+# https://bkhome.org/news/202012/easyos-dunfell-update-weird-error.html
+# it looks like patch #17 will fix it. see list of patches here:
+# https://ftp.gnu.org/gnu/bash/bash-5.0-patches/
+
+#PR = "r1"
+# 20210121 PR_NUM is defined in local.conf...
+PR = "r${@int(PR_NUM) + 1}"
+
+SRC_URI += " \
+  ${GNU_MIRROR}/bash/bash-${PV}-patches/bash50-017;apply=yes;striplevel=0;name=patch017 \
+  ${GNU_MIRROR}/bash/bash-${PV}-patches/bash50-018;apply=yes;striplevel=0;name=patch018"
+
+SRC_URI[patch017.sha256sum] = "4cf3b9fafb8a66d411dd5fc9120032533a4012df1dc6ee024c7833373e2ddc31"
+SRC_URI[patch018.sha256sum] = "7c314e375a105a6642e8ed44f3808b9def89d15f7492fe2029a21ba9c0de81d3"

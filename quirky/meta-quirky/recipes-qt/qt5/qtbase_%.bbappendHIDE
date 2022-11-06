@@ -1,0 +1,8 @@
+
+#20211215
+
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "\
+        file://set-cpp-fpermissive.patch \
+        "

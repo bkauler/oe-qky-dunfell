@@ -1,0 +1,4 @@
+# 20211028
+# ref: https://bkhome.org/news/202110/meson-version-bumped-to-0592.html
+# however, a recompile, 'atk' failed, due to meson version change.
+# so have rolled back to the dunfell version of meson, 0.53.0

@@ -1,0 +1,6 @@
+
+DEBUG: Executing shell function do_compile
+| NOTE: make -j 4
+| make: *** No targets specified and no makefile found.  Stop.
+| ERROR: oe_runmake failed
+| WARNING: /mnt/sdc1/builds/oe/thud/oe-easy/buildPC64/tmp-glibc/work/nocona-64-oe-linux/xsane/0.999-r0/temp/run.do_compile.16362:1 exit 1 from 'exit 1'

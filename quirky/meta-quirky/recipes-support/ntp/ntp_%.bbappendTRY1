@@ -1,0 +1,45 @@
+# BK 20201219 error:
+# chown: unknown user/group ntp:ntp
+
+do_install_append() {
+    install -d ${D}${sysconfdir}/init.d
+    install -m 644 ${WORKDIR}/ntp.conf ${D}${sysconfdir}
+    install -m 755 ${WORKDIR}/ntpd ${D}${sysconfdir}/init.d
+    install -d ${D}${bindir}
+    install -m 755 ${WORKDIR}/ntpdate ${D}${bindir}/ntpdate-sync
+
+    install -m 755 -d ${D}${NTP_USER_HOME}
+    #BK...
+    #chown ntp:ntp ${D}${NTP_USER_HOME}
+
+    # Fix hardcoded paths in scripts
+    sed -i 's!/usr/sbin/!${sbindir}/!g' ${D}${sysconfdir}/init.d/ntpd ${D}${bindir}/ntpdate-sync
+    sed -i 's!/usr/bin/!${bindir}/!g' ${D}${sysconfdir}/init.d/ntpd ${D}${bindir}/ntpdate-sync
+    sed -i 's!/etc/!${sysconfdir}/!g' ${D}${sysconfdir}/init.d/ntpd ${D}${bindir}/ntpdate-sync
+    sed -i 's!/var/!${localstatedir}/!g' ${D}${sysconfdir}/init.d/ntpd ${D}${bindir}/ntpdate-sync
+    sed -i 's!^PATH=.*!PATH=${base_sbindir}:${base_bindir}:${sbindir}:${bindir}!' ${D}${bindir}/ntpdate-sync
+    sed -i '1s,#!.*perl -w,#! ${bindir}/env perl,' ${D}${sbindir}/ntptrace
+    sed -i '/use/i use warnings;' ${D}${sbindir}/ntptrace
+    sed -i '1s,#!.*perl,#! ${bindir}/env perl,' ${D}${sbindir}/ntp-wait
+    sed -i '/use/i use warnings;' ${D}${sbindir}/ntp-wait
+    sed -i '1s,#!.*perl -w,#! ${bindir}/env perl,' ${D}${sbindir}/calc_tickadj
+    sed -i '/use/i use warnings;' ${D}${sbindir}/calc_tickadj
+
+    install -d ${D}/${sysconfdir}/default
+    install -m 644 ${WORKDIR}/ntpdate.default ${D}${sysconfdir}/default/ntpdate
+    install -m 0644 ${WORKDIR}/sntp ${D}${sysconfdir}/default/
+
+    install -d ${D}/${sysconfdir}/network/if-up.d
+    ln -s ${bindir}/ntpdate-sync ${D}/${sysconfdir}/network/if-up.d
+
+    install -d ${D}${systemd_unitdir}/system
+    install -m 0644 ${WORKDIR}/ntpdate.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${WORKDIR}/ntpd.service ${D}${systemd_unitdir}/system/
+    install -m 0644 ${WORKDIR}/sntp.service ${D}${systemd_unitdir}/system/
+
+    install -d ${D}${systemd_unitdir}/ntp-units.d
+    install -m 0644 ${WORKDIR}/ntpd.list ${D}${systemd_unitdir}/ntp-units.d/60-ntpd.list
+
+    # Remove an empty libexecdir.
+    rmdir --ignore-fail-on-non-empty ${D}${libexecdir}
+}

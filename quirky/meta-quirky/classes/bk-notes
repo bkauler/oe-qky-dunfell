@@ -1,0 +1,6 @@
+cmake*.bbclass from meta-qt5-extra layer.
+needed by meta-quirky/recipes-graphics/scribus
+
+20220116
+setuptools3-base.bbclass needed by opencv 4.5.2
+both from master.

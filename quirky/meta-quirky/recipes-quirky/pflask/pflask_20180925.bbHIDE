@@ -1,0 +1,42 @@
+# Recipe created by recipetool
+# recipetool create -o pflask_git.bb https://github.com/ghedo/pflask.git
+# ref: https://github.com/OverC/meta-overc/blob/master-oci/meta-cube/recipes-containers/pflask/pflask_git.bb
+
+# BK note, source pkg has 'waf' in it.
+
+LICENSE = "BSD-2-Clause"
+LIC_FILES_CHKSUM = "file://COPYING;md5=c2cd5f772e6f9b401d92014b0d1ebccd"
+
+SRC_URI = "http://distro.ibiblio.org/easyos/source/oe/thud/pflask-20180925.tar.gz"
+SRC_URI[md5sum] = "b42fced1a7c6023c1e772d9b0fb0368f"
+SRC_URI[sha256sum] = "0fae0da5c6db8a9726f5186b416ee50321b374db48ccc4d3693fe6456f06ae8d"
+
+S = "${WORKDIR}/pflask-20180925"
+
+# 2020-09-18 removed 'pythonnative', try 'python3native'
+inherit pkgconfig waf python3native
+
+# dbus and libcap-ng are optional deps, but i don't think need dbus...
+DEPENDS = "libcap-ng"
+
+XXXdo_configure_prepend () {
+	cp -f ${WORKDIR}/waf-1.8.6 ./waf
+	chmod 755 waf
+}
+
+XXXdo_configure () {
+	./waf configure --prefix=${prefix}
+}
+
+XXXdo_compile () {
+	./waf build
+}
+
+do_install () {
+	install -d ${D}/usr/bin
+	install -m 755 build/pflask ${D}/usr/bin
+}
+
+SECTION = "devel"
+SUMMARY = "Light weight container runtime"
+HOMEPAGE = "https://ghedo.github.io/pflask/"

@@ -1,0 +1,37 @@
+# BK 20201218 do_install() error, setting root:mail
+
+do_install_append() {
+	# Ensure that the image has as a /var/spool/mail dir so shadow can
+	# put mailboxes there if the user reconfigures shadow to its
+	# defaults (see sed below).
+	install -m 0775 -d ${D}${localstatedir}/spool/mail
+	#BK comment-out...
+	#chown root:mail ${D}${localstatedir}/spool/mail
+
+	if [ -e ${WORKDIR}/pam.d ]; then
+		install -d ${D}${sysconfdir}/pam.d/
+		install -m 0644 ${WORKDIR}/pam.d/* ${D}${sysconfdir}/pam.d/
+		# Remove defaults that are not used when supporting PAM.
+		sed -i -f ${WORKDIR}/login_defs_pam.sed ${D}${sysconfdir}/login.defs
+	fi
+
+	install -d ${D}${sbindir} ${D}${base_sbindir} ${D}${base_bindir}
+	
+	#BK this is broken...
+	## Move binaries to the locations we want
+	#rm ${D}${sbindir}/vigr
+	#ln -sf vipw.${BPN} ${D}${base_sbindir}/vigr
+	#if [ "${sbindir}" != "${base_sbindir}" ]; then
+	#	mv ${D}${sbindir}/vipw ${D}${base_sbindir}/vipw
+	#fi
+	
+	#BK also broken...
+	#if [ "${bindir}" != "${base_bindir}" ]; then
+	#	mv ${D}${bindir}/login ${D}${base_bindir}/login
+	#	mv ${D}${bindir}/su ${D}${base_bindir}/su
+	#fi
+
+	# Handle link properly after rename, otherwise missing files would
+	# lead rpm failed dependencies.
+	ln -sf newgrp.${BPN} ${D}${bindir}/sg
+}

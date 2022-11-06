@@ -1,0 +1,8 @@
+
+#this is a dep of flowblade.
+
+#do we really need gstreamer?...
+PACKAGECONFIG_remove = "gstreamer"
+
+#***NO*** opencv requires either gstreamer or ffmpeg.
+# in the case of ffmpeg, downloads its own source. crap!

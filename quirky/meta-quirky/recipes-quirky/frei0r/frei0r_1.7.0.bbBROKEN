@@ -1,0 +1,58 @@
+# Recipe created by recipetool
+# recipetool create -o frei0r_1.7.0.bb https://github.com/dyne/frei0r/archive/refs/tags/v1.7.0.tar.gz
+
+LICENSE = "GPLv2"
+LIC_FILES_CHKSUM = "file://COPYING;md5=59530bdf33659b29e73d4adb9f9f6552"
+
+SRC_URI = "https://github.com/dyne/frei0r/archive/refs/tags/v${PV}.tar.gz \
+           file://1001_fix_metainformation.patch \
+           file://1002_spelling.patch"
+
+SRC_URI[md5sum] = "d46006b92c3382a2f3260804249dcc11"
+SRC_URI[sha256sum] = "6f7cf95ea2257687cc31db0ed9c9bc0eec152e953d515f346eabec048ed2b29d"
+
+DEPENDS = "cairo zlib libxxf86vm libxrender libxfixes libxext libxdmcp libxdamage \
+           libxcb libxau libx11 util-linux libpng pixman mesa freetype fontconfig \
+           expat libdrm libjpeg-turbo"
+
+inherit cmake pkgconfig
+
+EXTRA_OECMAKE = "-DCMAKE_BUILD_TYPE=RELEASE -DWITHOUT_OPENCV=TRUE"
+
+HOMEPAGE = "https://frei0r.dyne.org/"
+SUMMARY = "A minimalistic plugin API for video effects"
+
+#| /mnt/sda1/nvme/oe-builds/oe-quirky/build-amd64/tmp/work/nocona-64-poky-linux/frei0r/1.7.0-r6/frei0r-1.7.0/src/filter/curves/curves.c:24:10: fatal error: stdlib.h: No such file or directory
+#|    24 | #include <stdlib.h>
+#|       |          ^~~~~~~~~~
+#| compilation terminated.
+# this doesn't fix it:
+SINC = "${WORKDIR}/recipe-sysroot/usr/include"
+SLIB = "${WORKDIR}/recipe-sysroot/usr/lib"
+#CFLAGS_prepend = "-I${SINC} "
+#LDFLAGS_prepend = "-L${SLIB} "
+#CMAKE_C_FLAGS = "${CFLAGS}"
+#TARGET_CFLAGS_prepend = "-I${SINC} "
+#export CMAKE_C_FLAGS="${CFLAGS}"
+#export CMAKE_CXX_FLAGS="${CFLAGS}"
+#export CMAKE_EXE_LINKER_FLAGS="${LDFLAGS}"
+#export CMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}"
+
+#export INCLUDES = " -isystem${STAGING_DIR_HOST}/usr/include "
+
+#export CMAKE_SYSROOT="${RECIPE_SYSROOT}"
+
+# try this, ref: https://community.nxp.com/t5/i-MX-Processors/Missing-stdlib-h-with-cmake-project-and-yocto-sdk/td-p/874156
+do_compile_prepend() {
+ echo "set(CMAKE_SYSROOT \"${RECIPE_SYSROOT}\")"  >> ${S}/src/filter/curves/CMakeLists.txt
+ #echo "set(CMAKE_C_FLAGS \"-I${WORKDIR}/recipe-sysroot/usr/include ${CMAKE_C_FLAGS}\")" >> ${S}/src/filter/curves/CMakeLists.txt
+ #echo "set(CMAKE_CXX_FLAGS \"-I${WORKDIR}/recipe-sysroot/usr/include ${CMAKE_CXX_FLAGS}\")" >> ${S}/src/filter/curves/CMakeLists.txt
+ #echo "set(CMAKE_EXE_LINKER_FLAGS \"-L${WORKDIR}/recipe-sysroot/usr/lib ${CMAKE_EXE_LINKER_FLAGS}\")" >> ${S}/src/filter/curves/CMakeLists.txt
+ #echo "set(CMAKE_SHARED_LINKER_FLAGS \"-L${WORKDIR}/recipe-sysroot/usr/lib ${CMAKE_SHARED_LINKER_FLAGS}\")" >> ${S}/src/filter/curves/CMakeLists.txt
+}
+
+XXXdo_configure_prepend() {
+ echo 'set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)' >> ${S}/CMakeLists.txt
+ echo 'set(CMAKE_NO_SYSTEM_FROM_IMPORTED ON)' >> ${S}/src/filter/curves/CMakeLists.txt
+ #sed -i '/^include_directories /d' ${S}/CMakeLists.txt
+}
