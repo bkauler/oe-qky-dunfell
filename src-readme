@@ -17,5 +17,9 @@ And expand it inside the "oe-qky-dunfell" folder (alongside "quirky" folder):
 If they aren't provided, then the libreoffice build will download them,
 except won't download the translations tarball.
 
+20221107
+--------
+Ok, you don't have to download it. Script "create-oe-quirky" will download it,
+if folder "src" doesn't exist.
 
 

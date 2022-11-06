@@ -19,6 +19,7 @@
 #20221015 added meta-conan
 #20221029 copy libreoffice-translations tarball.
 #20221106 merged downloads-oe/meta-kirkstone into quirky/meta-kirkstone
+#20221107 if no "src" folder, download it.
 
 #BUILDSPATH='/mnt/sda1/nvme/oe-builds' ###SET THIS###
 BUILDSPATH='/mnt/build/oe-builds' ###SET THIS### 20220131
@@ -256,6 +257,11 @@ cd ${BUILDSPATH}/oe-quirky/meta/lib/oe
 patch -p0 < ${PROJECTPATH}/sstatesig-hack.patch
 [ $? -ne 0 ] && echo "...patch failed! You will have to patch it manually."
 cd ${PROJECTPATH}
+
+if [ ! -d src ];then #20221107
+ wget https://distro.ibiblio.org/easyos/source/extra/oe-qky-dunfell/src.tar.gz
+ tar -xf src.tar.gz
+fi
 
 #2021 libreoffice downloads extra source packages, have already got them here (for libreoffice 7.1.3.2)
 if [ ! -d ${BUILDSPATH}/tarballs-libreoffice ];then
