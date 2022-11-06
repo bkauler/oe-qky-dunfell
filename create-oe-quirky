@@ -18,6 +18,7 @@
 #20220317 annoying, some recipes have a hard-coded revision#.
 #20221015 added meta-conan
 #20221029 copy libreoffice-translations tarball.
+#20221106 merged downloads-oe/meta-kirkstone into quirky/meta-kirkstone
 
 #BUILDSPATH='/mnt/sda1/nvme/oe-builds' ###SET THIS###
 BUILDSPATH='/mnt/build/oe-builds' ###SET THIS### 20220131
@@ -82,8 +83,9 @@ tar -xf downloads-oe/meta-rust.tar.gz --directory=${BUILDSPATH}/oe-quirky
 #tar -xf downloads-oe/meta-browser.tar.gz --directory=${BUILDSPATH}/oe-quirky
 tar -xf downloads-oe/meta-office.tar.gz --directory=${BUILDSPATH}/oe-quirky
 
-#20220304
-tar -xf downloads-oe/meta-kirkstone.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#20220304 20221106
+#tar -xf downloads-oe/meta-kirkstone.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
 sed -i -e 's%^LLVMVERSION .*%LLVMVERSION ?= "13.0.1"%' ${BUILDSPATH}/oe-quirky/meta/conf/distro/include/tcmode-default.inc
 
 tar -xf downloads-oe/meta-qt5.tar.gz --directory=${BUILDSPATH}/oe-quirky
