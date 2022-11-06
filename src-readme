@@ -1,0 +1,21 @@
+20221106
+--------
+To keep the oe-qky-dunfell repo on github as small as possible, 
+The "src" folder is not here.
+
+Please download it from here (248MB):
+
+https://distro.ibiblio.org/easyos/source/extra/oe-qky-dunfell/src.tar.gz
+
+md5sum: e68a79396e44244a2c5572815fe2f921
+
+And expand it inside the "oe-qky-dunfell" folder (alongside "quirky" folder):
+
+# tar -xf src.tar.gz
+
+"src.tar.gz" contains source tarballs that libreoffice requires during compile.
+If they aren't provided, then the libreoffice build will download them,
+except won't download the translations tarball.
+
+
+
