@@ -1,0 +1,287 @@
+#!/bin/sh
+#open a terminal inside folder 'dunfell' and run this script.
+#it will create folder '../oe-quirky' and populate it.
+#200921 $BUILDSPATH absolute variable target path.
+#20201218 this is a new one, a python error, comment out some lines.
+#20201219 check existence of some utilities. add meta-kernel.
+#20201221 added build-i686
+#20210103 added meta-raspberrypi  20210106 build-rpi4, build-aarch64
+#20210528 bump glibc 2.31 to 2.33, requires change a variable.
+#20210617 hack libreoffice.bb: disable do_install() as replacement in libreoffice.bbappend
+#20210826 libreoffice downloads extra source packages, have these in src folder.
+#20210827 added build-amd64-musl & build-aarch64-musl, for static compiles.
+#20210908 added meta-java   20210909 nah, build fails.
+#20211216 meta-qt5 still fails. meta-qt4 compiles, needs patches see below.
+#20220126 bumped yocto d/l. new meta-gstreamer1.0
+#20220131 new BUILDSPATH
+#20220305 backported from kirkstone-pre (meta-kirkstone).
+#20220317 annoying, some recipes have a hard-coded revision#.
+#20221015 added meta-conan
+#20221029 copy libreoffice-translations tarball.
+
+#BUILDSPATH='/mnt/sda1/nvme/oe-builds' ###SET THIS###
+BUILDSPATH='/mnt/build/oe-builds' ###SET THIS### 20220131
+[ ! -d $BUILDSPATH ] && exit
+
+if [ -d ${BUILDSPATH}/oe-quirky ];then
+ echo "Error, 'oe-quirky' already exists."
+ exit
+fi
+if [ ! -d downloads-oe ];then #sanity check.
+ echo "Error, folder downloads-oe does not exist."
+ exit
+fi
+PROJECTPATH="$(pwd)"
+
+#20201219 check some utilities exist...
+COREexe=''; UTILexe=''; BADflg=0
+if ! which sha224sum >/dev/null;then COREexe='sha224sum '; fi
+if ! which sha384sum >/dev/null;then COREexe="${COREexe}sha384sum "; fi
+RPflg="$(realpath --help 2>&1 | tr -s ' ' | grep -o '^ \-m,')"
+if [ "$RPflg" == "" ];then
+ echo "The full 'realpath' utility from the 'coreutils' package is required."
+ echo "Note: busybox realpath is inadequate."
+ BADflg=1
+fi
+if [ "$COREexe" ];then
+ echo "These utilities from the 'coreutils' package are required:"
+ echo "$COREexe"
+ BADflg=1
+fi
+if ! which setterm >/dev/null;then UTILexe='setterm '; fi
+if [ "$UTILexe" ];then
+ echo "These utilities from the 'util-linux' package are required:"
+ echo "$UTILexe"
+ BADflg=1
+fi
+if [ $BADflg -eq 1 ];then
+ echo "Note, in a busybox-based distro such as Puppy Linux and derivatives,
+it may be unwise to install all of 'coreutils' or 'util-linux'.
+Just extract the missing utilities from them."
+ echo "Aborting"
+ exit
+fi
+
+#need these to fetch from https sites...
+if which update-ca-certificates;then
+ mkdir -p /etc/ssl/certs
+ [ "$(find /etc/ssl/certs -mindepth 1 -maxdepth 1)" == "" ] && update-ca-certificates > /dev/null 2>&1 #populates /etc/ssl
+else
+ echo "Error, 'ca-certificates' package is not installed."
+ exit
+fi
+
+mkdir ${BUILDSPATH}/oe-quirky
+echo 'Populating ${BUILDSPATH}/oe-quirky...'
+tar -xf downloads-oe/openembedded-core.tar.gz --directory=${BUILDSPATH}/oe-quirky --strip=1
+tar -xf downloads-oe/meta-openembedded.tar.gz --directory=${BUILDSPATH}/oe-quirky --strip=1
+tar -xf downloads-oe/bitbake.tar.gz --directory=${BUILDSPATH}/oe-quirky
+tar -xf downloads-oe/meta-yocto.tar.gz --directory=${BUILDSPATH}/oe-quirky --strip=1
+tar -xf downloads-oe/meta-rust.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#tar -xf downloads-oe/meta-clang.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#tar -xf downloads-oe/meta-browser.tar.gz --directory=${BUILDSPATH}/oe-quirky
+tar -xf downloads-oe/meta-office.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
+#20220304
+tar -xf downloads-oe/meta-kirkstone.tar.gz --directory=${BUILDSPATH}/oe-quirky
+sed -i -e 's%^LLVMVERSION .*%LLVMVERSION ?= "13.0.1"%' ${BUILDSPATH}/oe-quirky/meta/conf/distro/include/tcmode-default.inc
+
+tar -xf downloads-oe/meta-qt5.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#20211217 attempting build, maybe this not needed:
+sed -i -e 's%{OE_QMAKE_CXXFLAGS}%{OE_QMAKE_CXXFLAGS} -fpermissive%' ${BUILDSPATH}/oe-quirky/meta-qt5/classes/qmake5_base.bbclass
+sed -i -e 's%{CXXFLAGS}%{CXXFLAGS} -fpermissive%' ${BUILDSPATH}/oe-quirky/meta-qt5/classes/qmake5_base.bbclass
+
+#tar -xf downloads-oe/meta-qt5-extra.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
+#20201219 ref: https://layers.openembedded.org/layerindex/branch/master/layer/meta-kernel/
+tar -xf downloads-oe/meta-kernel.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#20210825 no longer needed...
+#sed -i -e 's%gatesgarth%dunfell%' ${BUILDSPATH}/oe-quirky/meta-kernel/conf/layer.conf
+
+#20210103 ref: https://github.com/agherzan/meta-raspberrypi
+tar -xf downloads-oe/meta-raspberrypi.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
+#20210908 20210909 nah, build fails... 20220503 try again...
+tar -xf downloads-oe/meta-java.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
+#20211216
+tar -xf downloads-oe/meta-qt4.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#needs fix, do not have python2:
+sed -i -e 's%pythonnative%python3native%' ${BUILDSPATH}/oe-quirky/meta-qt4/recipes-qt4/recipes-python/python-pyqt_4.12.bb
+sed -i -e 's%python\-dir%python3-dir%' ${BUILDSPATH}/oe-quirky/meta-qt4/recipes-qt4/recipes-python/python-pyqt_4.12.bb
+#stupid recipes...
+sed -i -e 's%^PR = %#PR = %' ${BUILDSPATH}/oe-quirky/meta-qt4/recipes-qt4/qt-apps/fotowall_0.9.bb
+sed -i -e 's%^PR = %#PR = %' ${BUILDSPATH}/oe-quirky/meta-qt4/recipes-qt4/qt-apps/quicky_0.4.bb
+#we want gtkstyle...
+sed -i -e 's%no\-gtkstyle%gtkstyle%' ${BUILDSPATH}/oe-quirky/meta-qt4/recipes-qt4/qt4/qt4-x11-free.inc
+
+#20220126 new...
+tar -xf downloads-oe/meta-gstreamer1.0.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
+#20221015 new...
+tar -xf downloads-oe/meta-conan.tar.gz --directory=${BUILDSPATH}/oe-quirky
+
+
+#2020106 ***NO***
+##20201004...
+#tar -xf downloads-oe/meta-debian.tar.gz --directory=${BUILDSPATH}/oe-quirky
+#sed -i -e 's%^LAYERSERIES_COMPAT_debian = .*%LAYERSERIES_COMPAT_debian = "dunfell"%' ${BUILDSPATH}/oe-quirky/meta-debian/conf/layer.conf
+#sed -i -e 's%^BBFILE_PRIORITY_debian = .*%BBFILE_PRIORITY_debian = "9"%' ${BUILDSPATH}/oe-quirky/meta-debian/conf/layer.conf
+#rm -rf ${BUILDSPATH}/oe-quirky/meta-debian/recipes-kernel
+#rm -f ${BUILDSPATH}/oe-quirky/meta-debian/classes/linux-src.bbclass #only reqd by recipes-kernel
+##cut it down...
+#for aAPP in bc busybox cmake dtc gawk git grep kbd kmod lsb meson mtools pam pam-pkcs11 pam-shield paramiko perl pkgconfig ply python 'python-*' 'py*' qemu rpm sed selinux shadow shared-mime-info socat sudo tar tzdata u-boot util-linux xz zip
+#do
+# rm -rf ${BUILDSPATH}/oe-quirky/meta-debian/recipes-debian/${aAPP}
+#done
+##touch every file...
+#for aFILE in `find ${BUILDSPATH}/oe-quirky/meta-debian -mindepth 1 -type f -o -type l`
+#do
+# touch $aFILE
+#done
+##need patches etc from 'warrior' release of oe...
+#echo "Copying warrior recipe files to meta-warrior..."
+#for aPKG in `find ${BUILDSPATH}/oe-quirky/meta-debian/recipes-debian -mindepth 1 -maxdepth 1 -type d`
+#do
+# aNAME="$(basename $aPKG)"
+# fndPKG="$(find downloads-oe/warrior/openembedded-core/meta/recipes-* -maxdepth 1 -type d -name ${aNAME} | head -n 1)"
+# if [ "$fndPKG" ];then
+#  echo " ${fndPKG}"
+#  fndPATH="$(dirname $fndPKG)"
+#  fndRECIPE="$(basename $fndPATH)"
+#  mkdir -p ${BUILDSPATH}/oe-quirky/meta-warrior/${fndRECIPE}
+#  cp -a ${fndPKG} ${BUILDSPATH}/oe-quirky/meta-warrior/${fndRECIPE}/
+# fi
+#done
+#mkdir ${BUILDSPATH}/oe-quirky/meta-warrior/conf
+#echo 'BBPATH .= ":${LAYERDIR}"
+#BBFILES += "${LAYERDIR}/recipes-*/*/*.bb ${LAYERDIR}/recipes-*/*/*.bbappend"
+#BBFILE_COLLECTIONS += "warrior"
+#BBFILE_PATTERN_warrior := "^${LAYERDIR}/"
+#BBFILE_PRIORITY_warrior = "8"
+#LAYERVERSION_warrior = "1"
+#LAYERDEPENDS_warrior = "core"
+#LAYERSERIES_COMPAT_warrior = "dunfell"
+#' > ${BUILDSPATH}/oe-quirky/meta-warrior/conf/layer.conf
+##libpcap wants this...
+#cp -a -f downloads-oe/warrior/openembedded-core/meta/classes/bluetooth.bbclass ${BUILDSPATH}/oe-quirky/meta-debian/classes/
+##glibc wants this...
+#cp -a -f downloads-oe/warrior/openembedded-core/meta/classes/libc-common.bbclass ${BUILDSPATH}/oe-quirky/meta-debian/classes/
+
+sync
+
+#customization for quirky/easyos...
+cp -a -f --remove-destination quirky/* ${BUILDSPATH}/oe-quirky/
+sync
+
+# copy the docs also...
+cp -a docs ${BUILDSPATH}/oe-quirky/
+#cp -a -f readme.htm ${BUILDSPATH}/oe-quirky/
+
+# hacks...
+#allow run as root...
+sed -i -e 's%if 0 == os\.getuid%if 9999 == os.getuid%' ${BUILDSPATH}/oe-quirky/meta/classes/sanity.bbclass
+
+##'setterm' is out of util-linux pkg...
+#if [ ! -e /usr/bin/setterm ];then
+# cp -a -f setterm /usr/bin/
+# chmod 755 /usr/bin/setterm
+#fi
+[ ! -e /usr/bin/python2 ] && [ -e /usr/bin/python2.7 ] && ln -s python2.7 /usr/bin/python2
+FNDPY3="$(find /usr/bin -maxdepth 1 -type f -name 'python3.[0-9]' | head -n 1)"
+if [ ! "$FNDPY3" ];then
+ echo "Error, Python >= 3.4 is required."
+ exit
+fi
+BASEPY3="$(basename $FNDPY3)"
+[ ! -e /usr/bin/python3 ] && ln -s $BASEPY3 /usr/bin/python3
+
+#download src-pkgs folder...
+mkdir -p ${BUILDSPATH}/downloads
+ln -sr ${BUILDSPATH}/downloads ${BUILDSPATH}/oe-quirky/build-amd64/downloads
+ln -sr ${BUILDSPATH}/downloads ${BUILDSPATH}/oe-quirky/build-i686/downloads
+ln -sr ${BUILDSPATH}/downloads ${BUILDSPATH}/oe-quirky/build-rpi4/downloads
+ln -sr ${BUILDSPATH}/downloads ${BUILDSPATH}/oe-quirky/build-aarch64/downloads
+ln -sr ${BUILDSPATH}/downloads ${BUILDSPATH}/oe-quirky/build-amd64-musl/downloads
+ln -sr ${BUILDSPATH}/downloads ${BUILDSPATH}/oe-quirky/build-aarch64-musl/downloads
+
+#fix absolute paths in bblayers.conf...
+PTN1="s%ABSPATH%${BUILDSPATH}%"
+sed -i -e "$PTN1" ${BUILDSPATH}/oe-quirky/build-amd64/conf/bblayers.conf
+sed -i -e "$PTN1" ${BUILDSPATH}/oe-quirky/build-i686/conf/bblayers.conf
+sed -i -e "$PTN1" ${BUILDSPATH}/oe-quirky/build-rpi4/conf/bblayers.conf
+sed -i -e "$PTN1" ${BUILDSPATH}/oe-quirky/build-aarch64/conf/bblayers.conf
+sed -i -e "$PTN1" ${BUILDSPATH}/oe-quirky/build-amd64-musl/conf/bblayers.conf
+sed -i -e "$PTN1" ${BUILDSPATH}/oe-quirky/build-aarch64-musl/conf/bblayers.conf
+
+#181202 to compile ghostscript with libgs, need this...
+#ref: https://patchwork.openembedded.org/patch/137913/
+echo '
+SECURITY_CFLAGS_pn-ghostscript = "${SECURITY_NO_PIE_CFLAGS}"' >> ${BUILDSPATH}/oe-quirky/meta/conf/distro/include/security_flags.inc
+#see also ${BUILDSPATH}/oe-quirky/meta-quirky/recipes-extended/ghostscript/ghostscript_9.20.bbappend
+
+#20200921 kill the msg "... has not been validated with this version ..."
+Wstr="bb.warn('Host distribution \"%s\""
+sed -i -e "s/${Wstr}/#${Wstr}/" ${BUILDSPATH}/oe-quirky/meta/classes/sanity.bbclass
+
+#oe gatesgarth pre-release, kernel 5.8.13, it wanted /usr/bin/awk in host
+#no harm in doing it now...
+ln -s ../../bin/awk /usr/bin/awk 2>/dev/null
+#20210908 meta-java needs this...
+ln -s ../../bin/gawk /usr/bin/gawk 2>/dev/null
+ln -s ../../bin/cut /usr/bin/cut 2>/dev/null
+
+#20201014 replace "core2" with "nocona"...
+sed -i -e 's%^DEFAULTTUNE .*%DEFAULTTUNE = "nocona-64"%' ${BUILDSPATH}/oe-quirky/meta-yocto-bsp/conf/machine/genericx86-64.conf
+sed -i -e 's%tune\-core2%tune-nocona%' ${BUILDSPATH}/oe-quirky/meta-yocto-bsp/conf/machine/genericx86-64.conf
+sed -i -e 's%^DEFAULTTUNE .*%DEFAULTTUNE = "i686"%' ${BUILDSPATH}/oe-quirky/meta-yocto-bsp/conf/machine/genericx86.conf
+sed -i -e 's%tune\-core2%tune-i686%' ${BUILDSPATH}/oe-quirky/meta-yocto-bsp/conf/machine/genericx86.conf
+
+#20210411 remove coz have my own .bbappend in meta-quirky/recipes-graphics/harfbuzz...
+rm -rf ${BUILDSPATH}/oe-quirky/meta-office/appends/harfbuzz
+
+#20210528 have changed glibc from 2.31 to 2.33, need to fix this...
+sed -i -e 's/^GLIBCVERSION .*/GLIBCVERSION ?= "2.33%"/' ${BUILDSPATH}/oe-quirky/meta/conf/distro/include/tcmode-default.inc
+
+#20210617 hack libreoffice.bb: disable do_install() as replacement in libreoffice.bbappend
+cp -a -f ${BUILDSPATH}/oe-quirky/meta-office/recipes-libreoffice/libreoffice/libreoffice.bb ${BUILDSPATH}/oe-quirky/meta-office/recipes-libreoffice/libreoffice/libreoffice.bbORIG
+sed -i -e 's%do_install%XXXdo_install%' ${BUILDSPATH}/oe-quirky/meta-office/recipes-libreoffice/libreoffice/libreoffice.bb
+
+#20201218 this is a new one, a python error, comment out some lines
+# in this file: oe-builds/oe-quirky/meta/lib/oe/sstatesig.py
+echo "Patch to hack oe-quirky/meta/lib/oe/sstatesig.py ..."
+cd ${BUILDSPATH}/oe-quirky/meta/lib/oe
+patch -p0 < ${PROJECTPATH}/sstatesig-hack.patch
+[ $? -ne 0 ] && echo "...patch failed! You will have to patch it manually."
+cd ${PROJECTPATH}
+
+#2021 libreoffice downloads extra source packages, have already got them here (for libreoffice 7.1.3.2)
+if [ ! -d ${BUILDSPATH}/tarballs-libreoffice ];then
+ cp -a src/tarballs-libreoffice ${BUILDSPATH}/
+ sync
+ cp -a src/tarballs-libreoffice-native ${BUILDSPATH}/
+ sync
+ #20221029...
+ cp -a -f src/libreoffice-translations-*.tar.xz ${BUILDSPATH}/libreoffice/ 2>/dev/null
+ cp -a -f src/libreoffice-translations-*.tar.xz ${BUILDSPATH}/libreoffice-native/ 2>/dev/null
+fi
+
+#20220317 annoying hard-coded revision#
+#ex: ${BUILDSPATH}/oe-quirky/meta/recipes-support/db/db_5.3.28.bb has "r1"
+BBFILES="$(find ${BUILDSPATH}/oe-quirky/meta* -type f -name '*.bb')"
+for aBBF in $BBFILES
+do
+ [ "$aBBF" == "" ] && continue
+ sed -i -e 's%^PR = "r[0-9]%#PR = %' $aBBF #20220503 fix.
+done
+sync
+
+#200921
+echo "$PROJECTPATH" > ${BUILDSPATH}/oe-quirky/PROJECTPATH
+
+echo "Folder '${BUILDSPATH}/oe-quirky' populated.
+Now what you have to do, is open a terminal in 'oe-quirky'
+and run this, for pc x86_64 build:
+# source oe-init-build-env build-amd64
+# bitbake core-image-minimal
+"
