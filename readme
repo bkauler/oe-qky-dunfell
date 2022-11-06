@@ -1,0 +1,87 @@
+"oe-df-qky"
+-----------
+
+This is the Dunfell release of OpenEmbedded/Yocto, with packages
+and scripts to compile all packages required to build EasyOS
+or Quirky Linux.
+
+You need an ext4 partition with at least 300GB free space.
+Expand the dunfell-<date>.tar.gz tarball somewhere, it will 
+expand as folder dunfell-<date>.
+
+In the same partition, create a folder named oe-builds, that must
+be empty, or rather, must not have a folder named oe-quirky inside it.
+
+Edit the variable BUILDSPATH in script create-oe-quirky, with the
+absolute path to oe-builds (at the time of writing, this is line 15).
+
+As an absolute path is required, do not use a usb drive or any situation
+in which the mount-point may change.
+
+You will need to be running a Linux distro that is compatible with OE/Yocto.
+The author has used EasyOS, with the "devx" SFS loaded 
+(an aufs layer that provides all of the compiler infrastructure and tools).
+It must be an x86_64 host OS and must have python3 installed.
+
+NOTICE 2021-06-16:
+The latest version of EasyOS that can be host for OE-Dunfell is 2.7.3, 
+which has glibc 2.31. This release of OE will not work with a host that
+has glibc >2.31. EasyOS 2.8.1 has glibc 2.33.
+
+NOTICE 2021-12-12:
+OE Dunfell-series version 3.1.12 has been downloaded and synced with my
+local OE. This will now handle a host system with glibc up to 2.34.
+EasyOS 3.x has glibc 2.33.
+
+Execute create-oe-quirky:
+
+# ./create-oe-quirky
+
+And oe-builds/oe-quirky will be created and populated.
+
+Open a terminal in folder oe-quirky, and execute this:
+
+# source oe-init-build-env build-amd64
+# bitbake-layers show-layers
+# bitbake -g core-image-minimal
+
+You will find notes about these commands in oe-quirky/docs/bk-notes,
+as well as a complete manual, Yocto-Project-Mega-Manual.html
+
+You are now ready to do the build. It is likely to take at least several
+hours, depending on the PC. Plenty of RAM, and an SSD will help. The author
+has an i3 Intel CPU, 8GB RAM and a NVME SSD (with a swap partition on the SSD),
+and the build takes 9-10 hours.
+
+You can see a complete list of the packages that will be built here:
+oe-builds/oe-quirky/build-amd64/pn-buildlist
+
+It is useful to sort it (the above "source ..." command will have changed
+the current directory to build-amd64, so can execute this in same terminal):
+
+# sort pn-buildlist > pn-buildlistSORTED
+
+Do this to start the build:
+
+# bitbake core-image-minimal
+
+The build should complete without error, except the final "do_rootfs" stage
+will fail. This is where OE attmpts to put all of the packages into a
+rootfs tarball, but decides that some packages are unsuitable. 
+This is somewhat inscrutable behaviour by OE, but anyway, it doesn't
+matter, as we only want the packages, not the rootfs.
+
+Look in build-amd64/tmp/work, to see all the packages. For example,
+oe-builds/oe-quirky/build-amd64/tmp/work/core2-64-poky-linux/atk/2.34.1-r0/image
+has the compiled and installed result of building the "atk" package.
+
+The author's "woofQ" EasyOS/Quirky build system can now be used to extract
+all of these packages and use them to build EasyOS or Quirky.
+Basically, importing of the packages is done with script 0pre-oe in woofQ,
+but this will be described in detail later.
+
+Author: Barry Kauler
+Legal statement for the contents of dunfell-<date>.tar.gz:
+(c) Copyright Barry Kauler 2020, 2021 (bkhome.org), where not otherwise stated or implied.
+License GPLv3 where not otherwise stated or implied.
+
