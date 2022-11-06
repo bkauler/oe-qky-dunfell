@@ -1,0 +1,62 @@
+releases info:
+https://wiki.yoctoproject.org/wiki/Releases
+2020-09-16: latest release is 'dunfell'.
+2021-8-25: downloading everything. bitbake 1.46.10
+#2021-12-10: get latest dunfell 3.1.12, bitbake 1.46.11
+
+layers info:
+http://layers.openembedded.org/layerindex/branch/master/layers/
+bitbake info:
+https://git.openembedded.org/bitbake/
+
+note, meta-browser needs meta-rust and meta-clang
+
+
+This is how these sources were downloaded:
+
+#2021-12-10 rerun these...
+# git clone -b dunfell git://git.yoctoproject.org/meta-yocto --depth 1
+# git clone -b dunfell git://git.openembedded.org/openembedded-core openembedded-core --depth 1
+# git clone -b dunfell git://git.openembedded.org/meta-openembedded meta-openembedded --depth 1
+# git clone -b '1.46.11' git://git.openembedded.org/bitbake bitbake --depth 1
+
+#2021-12-15 rerun this...
+# git clone -b dunfell git://github.com/meta-qt5/meta-qt5.git meta-qt5 --depth 1
+
+#2021-12-18 rerun this...
+# git clone -b dunfell git://github.com/schnitzeltony/meta-qt5-extra.git meta-qt5-extra --depth 1
+
+# git clone -b dunfell git://github.com/kraj/meta-clang.git meta-clang --depth 1
+# git clone git://github.com/OSSystems/meta-browser.git meta-browser --depth 1
+# git clone -b dunfell git://github.com/schnitzeltony/meta-office.git meta-office --depth 1
+# git clone git://github.com/meta-rust/meta-rust.git meta-rust --depth 1
+
+2020-12-19  2021-08-25
+# git clone -b dunfell https://gitlab.com/openembedded/community/meta-kernel.git --depth 1
+
+2021-01-03
+# git clone -b dunfell https://github.com/agherzan/meta-raspberrypi.git --depth 1
+
+2021-09-08
+# git clone -b dunfell https://git.yoctoproject.org/git/meta-java --depth 1
+
+2021-12-16
+meta-qt4 does compile. needs a patch, see create-oe-quirky script
+there is no dunfell branch, master has some commits so works with dunfell
+# git clone -b master git://git.yoctoproject.org/meta-qt4 --depth 1
+
+
+---------------------
+2020-10-04 ***NO***
+having a go for binary compatibility with debian buster...
+the meta-debian instructions are based on warrior...
+# git clone -b warrior git://git.yoctoproject.org/meta-yocto --depth 1
+# git clone -b warrior git://git.openembedded.org/openembedded-core openembedded-core --depth 1
+# git clone -b warrior git://git.openembedded.org/meta-openembedded meta-openembedded --depth 1
+# git clone -b '1.42.3' git://git.openembedded.org/bitbake bitbake --depth 1
+# git clone -b warrior https://github.com/meta-debian/meta-debian.git meta-debian --depth 1
+
+--------------------------------
+The utility 'dir2tgz' can be used to make folders into tarballs.
+Note, this utility is in all Puppy Linux and derivatives.
+Note, I removed the .git folder from each before making into tarball.

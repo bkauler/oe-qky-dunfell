@@ -1,0 +1,59 @@
+#!/bin/ash
+
+
+rm -rf meta-yocto
+rm -f meta-yocto.tar.gz
+git clone -b dunfell git://git.yoctoproject.org/meta-yocto --depth 1
+rm -rf meta-yocto/.git
+dir2tgz meta-yocto
+sync
+
+rm -rf openembedded-core
+rm -f openembedded-core.tar.gz
+git clone -b dunfell git://git.openembedded.org/openembedded-core openembedded-core --depth 1
+rm -rf openembedded-core/.git
+dir2tgz openembedded-core
+sync
+
+rm -rf meta-openembedded
+rm -f meta-openembedded.tar.gz
+git clone -b dunfell git://git.openembedded.org/meta-openembedded meta-openembedded --depth 1
+rm -rf meta-openembedded/.git
+dir2tgz meta-openembedded
+sync
+
+rm -rf bitbake
+rm -f bitbake.tar.gz
+git clone -b '1.46.20' git://git.openembedded.org/bitbake bitbake --depth 1
+rm -rf bitbake/.git
+dir2tgz bitbake
+sync
+
+rm -rf meta-qt5
+rm -f meta-qt5.tar.gz
+git clone -b dunfell https://github.com/meta-qt5/meta-qt5.git meta-qt5 --depth 1
+rm -rf meta-qt5/.git
+dir2tgz meta-qt5
+sync
+
+rm -rf meta-qt5-extra
+rm -f meta-qt5-extra.tar.gz
+git clone -b dunfell https://github.com/schnitzeltony/meta-qt5-extra.git meta-qt5-extra --depth 1
+rm -rf meta-qt5-extra/.git
+dir2tgz meta-qt5-extra
+sync
+
+rm -rf meta-gstreamer1.0
+rm -f meta-gstreamer1.0.tar.gz
+git clone -b dunfell https://github.com/OSSystems/meta-gstreamer1.0.git --depth 1
+rm -rf meta-gstreamer1.0/.git
+dir2tgz meta-gstreamer1.0
+sync
+
+rm -rf meta-rust
+rm -f meta-rust.tar.gz
+git clone https://github.com/meta-rust/meta-rust.git --depth 1
+rm -rf meta-rust/.git
+dir2tgz meta-rust
+sync
+

@@ -1,0 +1,89 @@
+Yocto Dunfell 3.1.13 was released dec 2021
+ref: https://wiki.yoctoproject.org/wiki/Releases
+
+
+jan 26, 2022
+------------
+going to do a complete rebuild, "-r7"
+
+rerun these:
+# git clone -b dunfell git://git.yoctoproject.org/meta-yocto --depth 1
+# git clone -b dunfell git://git.openembedded.org/openembedded-core openembedded-core --depth 1
+# git clone -b dunfell git://git.openembedded.org/meta-openembedded meta-openembedded --depth 1
+# git clone -b '1.46.12' git://git.openembedded.org/bitbake bitbake --depth 1
+# git clone -b dunfell git://github.com/meta-qt5/meta-qt5.git meta-qt5 --depth 1
+# git clone -b dunfell git://github.com/schnitzeltony/meta-qt5-extra.git meta-qt5-extra --depth 1
+
+new, for gstreamer later version than in openembedded-core:
+# git clone -b dunfell https://github.com/OSSystems/meta-gstreamer1.0.git --depth 1
+
+----------------------------------
+Yocto Dunfell 3.1.14 released feb. 2022
+
+March 4, 2022
+-------------
+going to do a complete rebuild, "-r8"
+
+rerun these:
+# git clone -b dunfell git://git.yoctoproject.org/meta-yocto --depth 1
+# git clone -b dunfell git://git.openembedded.org/openembedded-core openembedded-core --depth 1
+# git clone -b dunfell git://git.openembedded.org/meta-openembedded meta-openembedded --depth 1
+# git clone -b '1.46.14' git://git.openembedded.org/bitbake bitbake --depth 1
+# git clone -b dunfell git://github.com/meta-qt5/meta-qt5.git meta-qt5 --depth 1
+# git clone -b dunfell git://github.com/schnitzeltony/meta-qt5-extra.git meta-qt5-extra --depth 1
+
+input600/0-oe-master-next
+kirkstone not yet released, but got 'master-next', have populated 'meta-kirkstone'
+with pkgs want to update.
+
+May 3, 2022
+-----------
+i seem to recall, failed with this. give it another go...
+# git clone -b dunfell https://git.yoctoproject.org/git/meta-java --depth 1
+
+June 1, 2022
+------------
+yocto dunfell has released 3.1.16 (may 2022)
+going to do a complete rebuild, "-r9"
+
+rerun these:
+# git clone -b dunfell git://git.yoctoproject.org/meta-yocto --depth 1
+# git clone -b dunfell git://git.openembedded.org/openembedded-core openembedded-core --depth 1
+# git clone -b dunfell git://git.openembedded.org/meta-openembedded meta-openembedded --depth 1
+# git clone -b '1.46.16' git://git.openembedded.org/bitbake bitbake --depth 1
+# git clone -b dunfell https://github.com/meta-qt5/meta-qt5.git meta-qt5 --depth 1
+# git clone -b dunfell https://github.com/schnitzeltony/meta-qt5-extra.git meta-qt5-extra --depth 1
+
+Sept. 27, 2022
+--------------
+got latest rust from master branch, v1.61:
+# git clone https://github.com/meta-rust/meta-rust.git --depth 1
+
+'rust' pkg is broken but these do compile:
+rust-native, rust-cross-nocona-64-glibc, rust-llvm-native
+libstd-rs, rust-llvm
+
+Oct. 15, 2022
+-------------
+'conan' is required to build audacity...
+https://github.com/conan-io/meta-conan
+
+# git clone -b dunfell https://github.com/conan-io/meta-conan.git --depth 1
+
+Oct. 28, 2022
+-------------
+yocto dunfell 3.1.20 (oct. 2022)
+bitbake 1.46.20
+do a complete rebuild "-r10"
+
+have written script 'update-3.1.20'
+
+-----------------------------------------------------------------
+Nov 6, 2022
+-----------
+have downlods-oe/meta-kirkstone and quirky/meta-kirkstone
+copy 1st into 2nd, delete 1st.
+
+
+
+
