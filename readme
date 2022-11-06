@@ -1,37 +1,36 @@
-"oe-df-qky"
------------
+oe-qky-dunfell
+--------------
 
-This is the Dunfell release of OpenEmbedded/Yocto, with packages
-and scripts to compile all packages required to build EasyOS
-or Quirky Linux.
+This is based on the Dunfell release of OpenEmbedded/Yocto, with packages
+and scripts, including meta-quirky layer, to compile all packages required
+to build EasyOS or Quirky Linux.
 
-You need an ext4 partition with at least 300GB free space.
-Expand the dunfell-<date>.tar.gz tarball somewhere, it will 
-expand as folder dunfell-<date>.
+You need an ext4 partition with at least 460GB free space.
 
-In the same partition, create a folder named oe-builds, that must
-be empty, or rather, must not have a folder named oe-quirky inside it.
+Clone this repository somewhere in that partition.
 
-Edit the variable BUILDSPATH in script create-oe-quirky, with the
-absolute path to oe-builds (at the time of writing, this is line 15).
+In the same partition, create a folder named "oe-builds", that must
+be empty, or rather, must not have a folder named "oe-quirky" inside it.
+
+Edit the variable BUILDSPATH in script "create-oe-quirky", with the
+absolute path to oe-builds.
 
 As an absolute path is required, do not use a usb drive or any situation
 in which the mount-point may change.
+
+Note, the Author does do a build on a USB SSD, and uses one of the scripts
+"mount-sdb1-on-mnt-build" or "mount-sdc1-on-mnt-build" to give a fixed
+mountpoint "/mnt/build"
 
 You will need to be running a Linux distro that is compatible with OE/Yocto.
 The author has used EasyOS, with the "devx" SFS loaded 
 (an aufs layer that provides all of the compiler infrastructure and tools).
 It must be an x86_64 host OS and must have python3 installed.
+The host distro must have glibc <= 2.34
 
-NOTICE 2021-06-16:
-The latest version of EasyOS that can be host for OE-Dunfell is 2.7.3, 
-which has glibc 2.31. This release of OE will not work with a host that
-has glibc >2.31. EasyOS 2.8.1 has glibc 2.33.
-
-NOTICE 2021-12-12:
-OE Dunfell-series version 3.1.12 has been downloaded and synced with my
-local OE. This will now handle a host system with glibc up to 2.34.
-EasyOS 3.x has glibc 2.33.
+Note, if you are new to EasyOS, click the "sfs" icon on the desktop to
+download and install the "devx" SFS. Install it to the main filesystem, not
+in a container. This SFS has everything needed for compiling.
 
 Execute create-oe-quirky:
 
@@ -45,21 +44,30 @@ Open a terminal in folder oe-quirky, and execute this:
 # bitbake-layers show-layers
 # bitbake -g core-image-minimal
 
-You will find notes about these commands in oe-quirky/docs/bk-notes,
-as well as a complete manual, Yocto-Project-Mega-Manual.html
+You will find notes about these commands in oe-quirky/docs/bk-notes
 
-You are now ready to do the build. It is likely to take at least several
-hours, depending on the PC. Plenty of RAM, and an SSD will help. The author
-has an i3 Intel CPU, 8GB RAM and a NVME SSD (with a swap partition on the SSD),
-and the build takes 9-10 hours.
+Running on a x86_64 host system, cross-compiling to x86_64 (nocona), i686
+and aarch64 targets are supported.
+
+A complete manual is online:
+
+https://docs.yoctoproject.org/3.1.20/singleindex.html
+
+You are now ready to do the build. It is likely to take 15-20
+hours, depending on the PC. Plenty of RAM, and an SSD will help.
+The PC must have at least 8GB RAM.
 
 You can see a complete list of the packages that will be built here:
+
 oe-builds/oe-quirky/build-amd64/pn-buildlist
 
 It is useful to sort it (the above "source ..." command will have changed
 the current directory to build-amd64, so can execute this in same terminal):
 
 # sort pn-buildlist > pn-buildlistSORTED
+
+At the time of writing, 947 packages are compiled, including very large ones,
+for example libreoffice.
 
 Do this to start the build:
 
@@ -75,13 +83,17 @@ Look in build-amd64/tmp/work, to see all the packages. For example,
 oe-builds/oe-quirky/build-amd64/tmp/work/core2-64-poky-linux/atk/2.34.1-r0/image
 has the compiled and installed result of building the "atk" package.
 
-The author's "woofQ" EasyOS/Quirky build system can now be used to extract
-all of these packages and use them to build EasyOS or Quirky.
-Basically, importing of the packages is done with script 0pre-oe in woofQ,
-but this will be described in detail later.
+After completing the oe-qky-dunfell build, the author's "woofQ" EasyOS/Quirky
+build system can then be used to extract all of these packages and use them to
+build EasyOS or Quirky.
+Basically, importing of the packages is done with script "0pre-oe" in woofQ.
+
+Further useful reading:
+
+https://easyos.org/dev/how-to-compile-a-linux-distribution-from-source.html
 
 Author: Barry Kauler
-Legal statement for the contents of dunfell-<date>.tar.gz:
-(c) Copyright Barry Kauler 2020, 2021 (bkhome.org), where not otherwise stated or implied.
+Legal statement about oe-qky-src:
+(c) Copyright Barry Kauler 2020-2023 (bkhome.org), where not otherwise stated or implied.
 License GPLv3 where not otherwise stated or implied.
 
