@@ -258,20 +258,23 @@ patch -p0 < ${PROJECTPATH}/sstatesig-hack.patch
 [ $? -ne 0 ] && echo "...patch failed! You will have to patch it manually."
 cd ${PROJECTPATH}
 
-if [ ! -d src ];then #20221107
- wget https://distro.ibiblio.org/easyos/source/extra/oe-qky-dunfell/src.tar.gz
- tar -xf src.tar.gz
-fi
 
 #2021 libreoffice downloads extra source packages, have already got them here (for libreoffice 7.1.3.2)
 if [ ! -d ${BUILDSPATH}/tarballs-libreoffice ];then
+ if [ ! -d src ];then #20221107
+  cd /tmp
+  wget https://distro.ibiblio.org/easyos/source/extra/oe-qky-dunfell/src.tar.gz
+  tar -xf src.tar.gz
+ fi
  cp -a src/tarballs-libreoffice ${BUILDSPATH}/
- sync
  cp -a src/tarballs-libreoffice-native ${BUILDSPATH}/
- sync
  #20221029...
  cp -a -f src/libreoffice-translations-*.tar.xz ${BUILDSPATH}/libreoffice/ 2>/dev/null
  cp -a -f src/libreoffice-translations-*.tar.xz ${BUILDSPATH}/libreoffice-native/ 2>/dev/null
+ sync
+ cd ${PROJECTPATH} #20221107
+ [ -d /tmp/src ] && rm -rf /tmp/src
+ [ -f /tmp/src.tar.gz ] && rm -f /tmp/src.tar.gz
 fi
 
 #20220317 annoying hard-coded revision#
